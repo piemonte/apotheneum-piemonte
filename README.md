@@ -89,3 +89,9 @@ javac -cp "$CP" tools/TestAll.java -d /tmp/testall && java -cp "$CP:/tmp/testall
 After pulling upstream Apotheneum changes, reinstall it (`mvn install` in that repo)
 and rebuild this package against the fresh artifact — the runtime link across jars
 means base-API changes surface here at load time, not compile time.
+
+## Resources
+
+- [Chromatik](https://chromatik.co) — the digital lighting workstation these patterns run on
+- [Apotheneum](https://github.com/Apotheneum/Apotheneum) — the installation's core package: model, fixtures, and base classes
+- [skills](https://github.com/piemonte/skills) — agent skills for pattern development, including `apotheneum-pattern`
