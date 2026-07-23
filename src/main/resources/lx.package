@@ -1,0 +1,15 @@
+{
+  name: "Apotheneum Piemonte",
+  mediaDir: "Piemonte",
+  author: "Patrick Piemonte",
+  url: "https://github.com/piemonte/apotheneum-piemonte",
+
+  build: {
+    name: "@project.name@",
+    version: "@project.version@",
+    groupId: "@project.groupId@",
+    artifactId: "@project.artifactId@",
+    lxVersion: "@lx.version@",
+    buildTimestamp: "@maven.build.timestamp@"
+  }
+}
