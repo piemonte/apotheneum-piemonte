@@ -35,21 +35,22 @@ public class TunnelVision extends ParameterPattern {
     CYLINDER
   }
 
-  private static final int MAX_CHAINS = 12;
-  private static final int MAX_RINGS = 12;
-  private static final double PERSP = 0.87;     // per-ring shrink into the tunnel
-  private static final double STAGGER_MS = 110; // per-ring delay along the chain
-  private static final double GROW_MS = 160;    // ring pop-in
-  private static final double HOLD_MS = 650;    // complete chain hangs here
-  private static final double SHRINK_MS = 280;  // ring collapse
+  private static final int MAX_CHAINS = 64;
+  private static final int MAX_RINGS = 18;
+  private static final double PERSP = 0.91;     // per-ring shrink into the tunnel
+  private static final double STAGGER_MS = 90;  // per-ring delay along the chain
+  private static final double GROW_MS = 150;    // ring pop-in
+  private static final double HOLD_MS = 550;    // complete chain hangs here
+  private static final double SHRINK_MS = 240;  // ring collapse
+  private static final double REF_BEAT_MS = 550; // lifecycle reference tempo (~109 BPM)
   private static final double TAU = Math.PI * 2;
 
   public final DiscreteParameter chains =
-    new DiscreteParameter("Chains", 3, 1, 8)
+    new DiscreteParameter("Chains", 36, 4, MAX_CHAINS)
     .setDescription("How many hoop chains are alive at once");
 
   public final DiscreteParameter rings =
-    new DiscreteParameter("Rings", 8, 4, MAX_RINGS)
+    new DiscreteParameter("Rings", 12, 4, MAX_RINGS)
     .setDescription("Hoops per chain");
 
   public final CompoundParameter sensitivity =
@@ -88,6 +89,7 @@ public class TunnelVision extends ParameterPattern {
   // audio: tunnels open on bass onsets, population swells with the level
   private double bassAvg, prevBass, sinceBeatMs = 1e9;
   private double levelEnv = 0;
+  private double beatPeriodMs = REF_BEAT_MS; // tracked tempo: EMA of onset spacing
 
   /** Returns onset strength 0..1, or -1 if no beat this frame. */
   private double detect(double deltaMs) {
@@ -105,7 +107,13 @@ public class TunnelVision extends ParameterPattern {
     double ratio = LXUtils.clamp((bass / Math.max(1e-4, this.bassAvg) - 1.0) / 1.5, 0, 1);
     this.prevBass = bass;
     if (beat) {
+      // track the tempo: smooth the spacing between onsets (clamped to sane BPM)
+      double interval = LXUtils.clamp(this.sinceBeatMs, 240, 1500);
+      this.beatPeriodMs += (interval - this.beatPeriodMs) * 0.25;
       this.sinceBeatMs = 0;
+    } else if (this.sinceBeatMs > 4000) {
+      // no music: relax back to the reference cadence
+      this.beatPeriodMs += (REF_BEAT_MS - this.beatPeriodMs) * (1 - Math.exp(-deltaMs / 2000.0));
     }
     double level = m.getAveragef(0, nb);
     double alpha = (level > this.levelEnv)
@@ -168,7 +176,8 @@ public class TunnelVision extends ParameterPattern {
     final Panel p = this.panels[pi];
     final int n = this.rings.getValuei();
     final double baseR = ringRadius(p);
-    final double space = baseR * (0.55 + Math.random() * 0.35);
+    // wider spacing relative to the small hoops stretches the tunnel tall
+    final double space = baseR * (1.1 + Math.random() * 0.5);
 
     this.cpanel[i] = pi;
     // vertical tunnels: rings stack upward with a slight lateral lean
@@ -190,7 +199,8 @@ public class TunnelVision extends ParameterPattern {
   }
 
   private double ringRadius(Panel p) {
-    return (0.10 + getSize() * 0.16) * Math.min(p.w, p.h) + 1;
+    // small hoops so many tunnels fit per face
+    return (0.035 + getSize() * 0.075) * Math.min(p.w, p.h) + 1;
   }
 
   private static double smooth(double u) {
@@ -221,7 +231,9 @@ public class TunnelVision extends ParameterPattern {
     this.timeMs += deltaMs;
     final double speed = Math.max(0.02, getSpeed());
     final double wow = getWow();
-    final double dt = deltaMs * (0.4 + speed * 1.6) * (1.0 + wow * 0.6);
+    // lifecycle clock follows the music's tempo: faster track, faster tunnels
+    final double tempoScale = REF_BEAT_MS / this.beatPeriodMs;
+    final double dt = deltaMs * (0.4 + speed * 1.6) * (1.0 + wow * 0.6) * tempoScale;
     final int base = getColor();
     final int hoop = LXColor.lerp(base, LXColor.WHITE, 0.35f);
     final int hot = LXColor.lerp(base, LXColor.WHITE, 0.85f);
@@ -229,7 +241,7 @@ public class TunnelVision extends ParameterPattern {
     final boolean quiet = this.levelEnv < 0.04;
     // the music sets the population: level raises the ceiling, Wow raises it more
     final int want = Math.min(MAX_CHAINS, this.chains.getValuei()
-      + (int) Math.round(this.levelEnv * 5 + wow * 4));
+      + (int) Math.round(this.levelEnv * 14 + wow * 10));
     final double glintAmt = 0.35 + wow * 0.65;
     final double ga = this.timeMs * 0.0012; // glint sweep angle
 
@@ -240,7 +252,7 @@ public class TunnelVision extends ParameterPattern {
 
     // bass onsets punch new tunnels open, harder hits open several at once
     if (onset >= 0) {
-      int burst = 1 + (int) Math.round(onset * 2 + wow * 1.5);
+      int burst = 2 + (int) Math.round(onset * 5 + wow * 3);
       for (int i = 0; i < MAX_CHAINS && burst > 0 && active < want; ++i) {
         if (!this.calive[i]) {
           spawn(i);

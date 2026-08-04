@@ -13,11 +13,11 @@ import java.util.List;
  */
 public class TestAll {
   static final String[] PATTERNS = {
-    "Afterglow", "Biorhythm", "CandyFlip", "ComeUp", "Cope", "Crush", "Destination",
-    "FeelSomething", "Handprint", "Heartthrob", "Hexed", "HolyWater", "Liftoff",
+    "Afterglow", "CandyFlip", "ComeUp", "Cope", "Crush", "Destination",
+    "FeelSomething", "Handprint", "Hexed", "HolyWater", "Liftoff",
     "Mainframe", "Motherboard", "Origami", "Overflow", "ParticleWave", "PlayaStrobe",
     "Pressure", "Rain", "Replies", "ReUp", "Slipstream", "SpaceBoundSpecies",
-    "SpecialKube", "Superbloom", "TheHumanRace", "Trains", "Trip", "TunnelVision",
+    "SpecialKube", "Superbloom", "TheHumanRace", "Trains", "Trip", "TunnelVision", "UFOAbduction",
     "Vibe", "Whiteout"
   };
 

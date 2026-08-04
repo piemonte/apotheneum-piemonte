@@ -25,10 +25,11 @@ import heronarts.lx.utils.LXUtils;
 public class Mainframe extends StrandPattern {
 
   private static final int MAX_DROPS = 400;
-  private static final int GLYPHS = 7;
-  private static final double[] SCENE_HUES = { 125, 4, 37 }; // emerald, red, amber
-  private static final double SCENE_MS = 9500;
-  private static final double XFADE_MS = 2200;
+  private static final int GLYPHS = 10;
+  // green <-> red flood; the downward lerp sweeps through amber mid-fade
+  private static final double[] SCENE_HUES = { 125, 4 };
+  private static final double SCENE_MS = 3200;
+  private static final double XFADE_MS = 1500;
 
   public final CompoundParameter rain =
     new CompoundParameter("Rain", 0.6, 0, 1)
@@ -95,7 +96,7 @@ public class Mainframe extends StrandPattern {
     // flood breathes: ~250ms attack, ~1.1s release (reference envelope)
     final double wow = getWow();
     final double target = LXUtils.clamp(
-      0.10 + 0.80 * this.levelEnv * this.levelEnv * (1 + wow) + this.pulse * 0.18, 0, 0.95);
+      0.04 + 0.85 * this.levelEnv * this.levelEnv * (1 + wow) + this.pulse * 0.18, 0, 0.95);
     final double tau = (target > this.floodLvl) ? 250.0 : 1100.0;
     this.floodLvl += (target - this.floodLvl) * (1 - Math.exp(-deltaMs / tau));
   }
@@ -125,8 +126,11 @@ public class Mainframe extends StrandPattern {
     final double hueShift = LXColor.h(getColor());
     final double fh = floodHue() + hueShift;
     final int scene = LXColor.hsb((float) (((fh % 360) + 360) % 360), 92, 100);
-    final int sceneHot = LXColor.lerp(scene, LXColor.WHITE, 0.5f);
-    final int cyan = LXColor.hsb((float) (((180 + hueShift) % 360)), 90, 100);
+    // the three color identities are hard-separated in the reference: green
+    // rain and red bars persist over whatever the flood is doing
+    final int rainC = LXColor.hsb((float) (((125 + hueShift) % 360) + 360) % 360, 90, 100);
+    final int glyphC = LXColor.hsb((float) (((4 + hueShift) % 360) + 360) % 360, 95, 100);
+    final int glyphHot = LXColor.hsb((float) (((32 + hueShift) % 360) + 360) % 360, 100, 100);
 
     // global flood wash: dim ambient that surges toward full on swells
     final double floodB = LXUtils.clamp(this.floodLvl + wow * 0.10, 0, 0.95);
@@ -150,40 +154,54 @@ public class Mainframe extends StrandPattern {
       s.alive[i] = true;
       --toSpawn;
     }
-    final double tail = 13 + getSize() * 9; // ~30-50% of strand height
+    final double tail = 16 + getSize() * 12; // reaches the longest staircases
     for (int i = 0; i < MAX_DROPS; ++i) {
       if (!s.alive[i]) continue;
       s.py[i] += s.pv[i] * deltaMs;
       if (s.py[i] >= h + tail) { s.alive[i] = false; continue; }
-      comet(o, s.px[i], s.py[i], tail, scene, 0.9, true);
+      comet(o, s.px[i], s.py[i], tail, rainC, 0.95, true);
     }
 
-    // data glyph blocks: fast independent re-rolls (~200ms cadence) + beat bursts
-    final double rollP = deltaMs / 220.0;
+    // data-bars hold position ~1.2s; only their internal dots churn fast
+    final double rollP = deltaMs / 1200.0;
     for (int i = 0; i < GLYPHS; ++i) {
-      if (Math.random() < rollP || (this.beat && Math.random() < 0.6 + wow * 0.3)) {
+      if (Math.random() < rollP || (this.beat && Math.random() < 0.25 + wow * 0.3)) {
         rollGlyph(s, i, w, h);
       }
     }
-    final int gw = 3 + (int) (getSize() * 2);
-    final int gh = 5 + (int) (getSize() * 2);
+    final int gw = 2 + (int) (getSize() * 1.2);
+    final int gh = 8 + (int) (getSize() * 6);
     final int tq = (int) (this.timeMs / 120);
     for (int i = 0; i < GLYPHS; ++i) {
       if (!s.gon[i]) continue;
       for (int dx = 0; dx < gw; ++dx) {
         for (int dy = 0; dy < gh; ++dy) {
-          // blocky bit texture inside the glyph
-          if (hashd(i * 977 + dx * 31 + dy * 7 + tq) < 0.35) continue;
-          addPix(o, s.gx[i] + dx, s.gy[i] + dy, sceneHot, 0.85 + this.pulse * 0.3);
+          // dot-matrix bit texture churning inside the persistent bar
+          final double bit = hashd(i * 977 + dx * 31 + dy * 7 + tq);
+          if (bit < 0.35) continue;
+          addPix(o, s.gx[i] + dx, s.gy[i] + dy,
+            (bit > 0.82) ? glyphHot : glyphC, 0.85 + this.pulse * 0.3);
         }
       }
     }
 
-    // cyan service strips at the floor line
+    // warm console ring at the floor line (red/amber segments, never cyan)
+    final int ringAmber = LXColor.hsb((float) (((34 + hueShift) % 360) + 360) % 360, 95, 100);
     for (int x = 0; x < w; ++x) {
-      if (hashd(x * 53 + (isCube ? 1 : 2)) < 0.35) {
-        addPix(o, x, h - 1, cyan, 0.35 + 0.25 * hashd(x * 7 + tq));
-        addPix(o, x, h - 2, cyan, 0.18);
+      final double hh = hashd(x * 53 + (isCube ? 1 : 2));
+      if (hh < 0.45) {
+        final int c = (hashd(x * 17 + 3) < 0.5) ? glyphC : ringAmber;
+        addPix(o, x, h - 1, c, 0.45 + 0.30 * hashd(x * 7 + tq));
+        addPix(o, x, h - 2, c, 0.22);
+      }
+    }
+    // green strand-pile puddles glittering on the floor
+    for (int x = 0; x < w; ++x) {
+      if (hashd(x * 29 + (isCube ? 7 : 9)) < 0.30) {
+        final double b = 0.30 + 0.40 * hashd(x * 11 + tq) + 0.25 * this.levelEnv;
+        addPix(o, x, h - 1, rainC, b);
+        addPix(o, x, h - 2, rainC, b * 0.6);
+        addPix(o, x, h - 3, rainC, b * 0.3);
       }
     }
   }

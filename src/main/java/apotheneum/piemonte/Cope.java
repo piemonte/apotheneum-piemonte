@@ -109,6 +109,7 @@ public class Cope extends ParameterPattern {
   // shared bass-onset state (computed once per frame)
   private double bassAvg, prevBass, sinceBeatMs, beatLevel;
   private double levelEnv = 0;
+  private double levelAvg = 0; // slow auto-gain reference
 
   public Cope(LX lx) {
     // Base registers color (edge/glow tint), speed (glow expand/decay), size (base
@@ -156,14 +157,18 @@ public class Cope extends ParameterPattern {
     double aAtk = 1 - Math.exp(-deltaMs / 25.0);
     double aRel = 1 - Math.exp(-deltaMs / 220.0);
     this.levelEnv += (level - this.levelEnv) * (level > this.levelEnv ? aAtk : aRel);
+    // auto-gain: normalize against a slow running average so mic or line input
+    // both produce full-range breathing
+    this.levelAvg += (level - this.levelAvg) * (1 - Math.exp(-deltaMs / 2500.0));
+    final double norm = LXUtils.clamp(this.levelEnv / Math.max(1e-4, this.levelAvg * 1.15), 0, 2);
     final Target t = this.target.getEnum();
     final int nLines = this.lines.getValuei();
 
     if (t != Target.CYLINDER) {
-      step(this.cube, Apotheneum.cube.exterior, deltaMs, beat, this.levelEnv, true, 0);
+      step(this.cube, Apotheneum.cube.exterior, deltaMs, beat, norm, true, 0);
     }
     if (t != Target.CUBE) {
-      step(this.cylinder, Apotheneum.cylinder.exterior, deltaMs, beat, this.levelEnv, false, nLines);
+      step(this.cylinder, Apotheneum.cylinder.exterior, deltaMs, beat, norm, false, nLines);
     }
     copyExterior();
   }
@@ -181,10 +186,11 @@ public class Cope extends ParameterPattern {
     final double baseR = 0.5 + getSize() * 4.0 + wow * 2.0;
     final double thickMax = isCube ? w * 0.25 : 0.45 * (double) w / Math.max(1, nLines);
     final double thick = LXUtils.clamp(
-      baseR + this.reactivity.getValue() * level * 8.0, 0.5, thickMax);
+      baseR + this.reactivity.getValue() * level * (thickMax - baseR) * 0.6, 0.5, thickMax);
+    final double barBright = 0.65 + 0.35 * LXUtils.clamp(level, 0, 1);
     for (int ex : s.edgeX) {
       for (int y = 0; y < h; ++y) {
-        vbar(o, w, h, ex, y, thick, 1.0, base);
+        vbar(o, w, h, ex, y, thick, barBright, base);
       }
     }
 

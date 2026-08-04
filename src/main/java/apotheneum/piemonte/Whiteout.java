@@ -29,7 +29,7 @@ public class Whiteout extends StrandPattern {
   private static final int MAX_DROPS = 600;
   private static final int SILVER = LXColor.hsb(210, 8, 100); // barely-cool white
   private static final int AMBER = LXColor.hsb(45, 85, 100);
-  private static final double GAP_FRAC = 0.42; // wide dark gaps between curtain panels
+  private static final double GAP_FRAC = 0.25; // thin dark seams between wide panels
 
   public final CompoundParameter density =
     new CompoundParameter("Density", 0.6, 0.1, 1)
@@ -89,25 +89,32 @@ public class Whiteout extends StrandPattern {
     final int nPanels = this.panels.getValuei();
     final double tail = (3 + getSize() * 3) * (1 + wow * 0.5);
     // density swells gently with the music; blizzard at high Wow
+    // near-constant density (the reference never swells); audio only nudges
     final double dens = this.density.getValue()
-      * (0.55 + 0.45 * LXUtils.clamp(this.levelEnv * 1.5, 0, 1) + wow)
+      * (0.8 + 0.2 * LXUtils.clamp(this.levelEnv, 0, 1) + wow * 0.4)
       * (nPanels <= 1 ? 1.0 : 1.0 / (1.0 - GAP_FRAC));
 
-    // base curtain: static full-height strands, all the motion is in-place
-    // scintillation (the reference's threads shimmer without falling)
+    // curtain body: bright dense emitter band at the top, scintillating pixels
+    // thinning and darkening toward the floor (rain dissolves as it falls)
     final int tqc = (int) (this.timeMs / 60);
+    final double topBand = 0.18 * h;
     for (int x = 0; x < w; ++x) {
       if (inGap(x, w, nPanels)) continue;
       for (int y = 0; y < h; ++y) {
         final double g = hashd(x * 262147 + y * 8191 + tqc * 131);
-        if (g > 0.42) continue; // ~40% of strand pixels lit each instant
-        final double b = (0.06 + 0.30 * (g / 0.42)) * (0.6 + 0.4 * this.levelEnv + wow * 0.3);
-        addPix(o, x, y, SILVER, b * (0.8 + 0.2 * drip(y, h)));
+        final double yf = (double) y / h;
+        final double densY = (y < topBand) ? 0.85 : 0.55 * Math.exp(-2.4 * yf);
+        if (g > densY) continue;
+        double b = (y < topBand)
+          ? 0.35 + 0.55 * (g / densY)
+          : (0.05 + 0.28 * (g / densY)) * Math.exp(-1.8 * yf);
+        b *= (0.7 + 0.3 * this.levelEnv + wow * 0.25);
+        addPix(o, x, y, (y < topBand) ? LXColor.WHITE : SILVER, b);
       }
     }
 
-    // spawn accent streaks (sparse, slower than the shimmer suggests motion)
-    final double spawnRate = dens * w * 0.0005 * deltaMs;
+    // falling comets: the primary motion — many streams descending from the band
+    final double spawnRate = dens * w * 0.0022 * deltaMs;
     int toSpawn = (int) spawnRate + ((Math.random() < spawnRate % 1) ? 1 : 0);
     for (int i = 0; i < MAX_DROPS && toSpawn > 0; ++i) {
       if (s.alive[i]) continue;
@@ -129,7 +136,8 @@ public class Whiteout extends StrandPattern {
       if (s.py[i] >= h + tail) { s.alive[i] = false; continue; }
       // scintillation: each droplet flickers frame to frame
       double tw = 0.55 + 0.45 * hashd(i * 131 + tq * 7);
-      comet(o, s.px[i], s.py[i], tail, SILVER, s.pb[i] * tw, s.pb[i] > 0.8);
+      final double dfade = Math.exp(-1.6 * Math.max(0, s.py[i]) / h); // dissolve toward the floor
+      comet(o, s.px[i], s.py[i], tail, SILVER, s.pb[i] * tw * dfade, s.pb[i] > 0.8);
     }
 
     // sparkle mask: brief white glints across the lit panel area
@@ -142,11 +150,13 @@ public class Whiteout extends StrandPattern {
       addPix(o, gx, gy, LXColor.WHITE, 0.25 + Math.random() * 0.5);
     }
 
-    // the lone warm accent block, parked on one panel edge
-    final int ax = (int) (w * 0.83);
-    for (int dx = 0; dx < 3; ++dx) {
-      for (int dy = 0; dy < 6; ++dy) {
-        addPix(o, ax + dx, h - 10 + dy, AMBER, 0.16 + 0.05 * hashd(dx * 7 + dy * 13 + tq));
+    // the lone warm accent: a dim round worklight glowing behind the curtain
+    final int ax = (int) (w * 0.86);
+    final int ay = (int) (h * 0.45);
+    for (int dx = -1; dx <= 1; ++dx) {
+      for (int dy = -1; dy <= 1; ++dy) {
+        final double r = Math.sqrt(dx * dx + dy * dy);
+        addPix(o, ax + dx, ay + dy, AMBER, 0.14 * Math.exp(-r));
       }
     }
   }

@@ -29,8 +29,8 @@ public class Pressure extends StrandPattern {
   private static final int MAX_GROUPS = 32;
 
   public final DiscreteParameter columns =
-    new DiscreteParameter("Columns", 24, 8, MAX_GROUPS)
-    .setDescription("Strand column groups around the surface");
+    new DiscreteParameter("Columns", 7, 3, 16)
+    .setDescription("Curtain panels around the surface");
 
   public final CompoundParameter sensitivity =
     new CompoundParameter("Sens", 0.5, 0, 1)
@@ -78,41 +78,39 @@ public class Pressure extends StrandPattern {
     final double wow = getWow();
     if (this.beat) {
       ++this.beatCount;
-      // the whole wall swaps identity together each pulse, with a few dissenters
-      final boolean globalRed = (this.beatCount & 1) == 1;
+      // green is home; a red minority coexists, re-rolled per pulse; rare all-red wall
+      double redFrac = 0.25 + this.beatLevel * 0.15 + wow * 0.1;
+      if (hashd(this.beatCount * 13 + 5) < 0.12) {
+        redFrac = 0.85;
+      }
       for (int i = 0; i < MAX_GROUPS; ++i) {
-        this.firing[i] = hashd(this.beatCount * 131 + i * 7) < (0.70 + this.beatLevel * 0.25 + wow * 0.1);
-        this.isRed[i] = globalRed ^ (hashd(this.beatCount * 977 + i * 31) < 0.15);
+        this.isRed[i] = hashd(this.beatCount * 977 + i * 31) < redFrac;
+        this.firing[i] = true; // the gate is temporal (whole field), not spatial
       }
     }
 
-    // idle breathe when the room is quiet: the ~1.1s gate cadence of the reference
+    // idle gate in silence: hard on/off square at the reference's ~0.7s cadence
     final double speed = Math.max(0.05, getSpeed());
-    final double breathe = 0.5 + 0.5 * Math.sin(this.timeMs * 0.0057 * speed * 2);
     final boolean quiet = this.levelEnv < 0.05;
-    // keep the red/green wall-swap running in silence too
-    final int idlePulse = (int) (this.timeMs * speed * 2 / 1100.0);
+    final double idleCycle = this.timeMs * speed * 2 / 700.0;
+    final int idlePulse = (int) idleCycle;
     if (quiet && idlePulse != this.lastIdlePulse) {
       this.lastIdlePulse = idlePulse;
-      final boolean globalRed = (idlePulse & 1) == 1;
       for (int i = 0; i < MAX_GROUPS; ++i) {
-        this.firing[i] = hashd(idlePulse * 131 + i * 7) < 0.75;
-        this.isRed[i] = globalRed ^ (hashd(idlePulse * 977 + i * 31) < 0.15);
+        this.isRed[i] = hashd(idlePulse * 977 + i * 31) < 0.30;
+        this.firing[i] = true;
       }
     }
+    final double idleGate = ((idleCycle - idlePulse) < 0.55) ? 0.95 : 0.04;
 
-    // fast attack / fast-ish release per group (measured ~250-300ms)
+    // whole-field gate: fast attack, ~250ms release into a held near-black trough
     final double aAtk = 1 - Math.exp(-deltaMs / 30.0);
-    final double aRel = 1 - Math.exp(-deltaMs / (270.0 - wow * 90));
+    final double target = quiet
+      ? idleGate
+      : LXUtils.clamp(0.20 + this.levelEnv * 1.0 + this.beatLevel * 0.5 + wow * 0.2, 0, 1.3);
     for (int i = 0; i < MAX_GROUPS; ++i) {
-      double target;
-      if (quiet) {
-        target = (0.15 + 0.75 * breathe) * (this.firing[i] ? 1 : 0.35);
-      } else {
-        target = this.firing[i]
-          ? LXUtils.clamp(0.35 + this.levelEnv * 0.9 + this.beatLevel * 0.4 + wow * 0.2, 0, 1.3)
-          : 0.06;
-      }
+      // tiny per-curtain release offset so transitions show a lagging curtain or two
+      final double aRel = 1 - Math.exp(-deltaMs / ((270.0 - wow * 90) * (1.0 + 0.15 * hashd(i * 7))));
       double a = (target > this.energy[i]) ? aAtk : aRel;
       this.energy[i] += (target - this.energy[i]) * a;
     }
@@ -124,32 +122,43 @@ public class Pressure extends StrandPattern {
     final int h = o.height();
     final int n = this.columns.getValuei();
     final double hueShift = LXColor.h(getColor());
-    final int green = LXColor.hsb((float) (((120 + hueShift) % 360)), 98, 100);
+    final int green = LXColor.hsb((float) (((112 + hueShift) % 360)), 98, 100);
+    final int yellow = LXColor.hsb((float) (((78 + hueShift) % 360)), 95, 100);
     final int red = LXColor.hsb((float) (((2 + hueShift) % 360)), 100, 100);
     final int amber = LXColor.hsb((float) (((30 + hueShift) % 360)), 92, 100);
+    final int ember = LXColor.hsb((float) (((24 + hueShift) % 360)), 90, 100);
     final int tq = (int) (this.timeMs / 80);
 
     for (int x = 0; x < w; ++x) {
       final int g = Math.min(n - 1, x * n / w);
       final double e = this.energy[g];
-      if (e <= 0.01) continue;
-      // soft edges between neighbor groups
-      final double gf = ((double) x * n / w) - g;
-      final double edge = Math.min(1.0, Math.min(gf, 1 - gf) * 6 + 0.35);
-      final double shim = 0.92 + 0.08 * hashd(x * 131 + tq * 7);
-      int c = this.isRed[g] ? red : green;
-      // overdriven red bleeds amber
-      if (this.isRed[g] && e > 0.85) {
-        c = LXColor.lerp(red, amber, (float) LXUtils.clamp((e - 0.85) * 4, 0, 1));
+      // dark wall gap between discrete curtain panels
+      final double gpos = ((double) x * n / w) - g;
+      if (gpos < 0.10 || gpos > 0.90) continue;
+      if (e > 0.01) {
+        final double shim = 0.90 + 0.10 * hashd(x * 131 + tq * 7);
+        int c = this.isRed[g] ? red : green;
+        // overdrive bleeds: red toward amber, green toward yellow-green
+        if (e > 0.85) {
+          final float od = (float) LXUtils.clamp((e - 0.85) * 4, 0, 1);
+          c = this.isRed[g] ? LXColor.lerp(red, amber, od) : LXColor.lerp(green, yellow, od);
+        }
+        final int hot = LXColor.lerp(c, LXColor.WHITE, 0.35f);
+        for (int y = 0; y < h; ++y) {
+          double b = e * drip(y, h) * shim;
+          b += e * pool(y, h);
+          if (b <= 0.01) continue;
+          // the hottest point is the floor, not the truss
+          addPix(o, x, y, (e > 1.0 && y >= h - 3) ? hot : c, b);
+        }
       }
-      final int hot = LXColor.lerp(c, LXColor.WHITE, 0.35f);
+    }
 
-      for (int y = 0; y < h; ++y) {
-        double b = e * drip(y, h) * edge * shim;
-        b += e * pool(y, h);
-        if (b <= 0.01) continue;
-        addPix(o, x, y, (e > 1.0 && y < 3) ? hot : c, b);
-      }
+    // persistent warm floor ember: alive even in the blackest troughs
+    for (int x = 0; x < w; ++x) {
+      final double fb = 0.14 * (0.7 + 0.3 * hashd(x * 37 + tq));
+      addPix(o, x, h - 1, ember, fb);
+      addPix(o, x, h - 2, ember, fb * 0.45);
     }
   }
 }

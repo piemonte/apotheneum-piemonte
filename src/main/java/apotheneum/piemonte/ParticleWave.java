@@ -98,7 +98,7 @@ public class ParticleWave extends ParameterPattern {
     final double speed = Math.max(0.02, getSpeed());
     final double wow = getWow();
     // the swell rolls around the structure; storms roll faster
-    this.phase += deltaMs * 0.00006 * speed * (1.0 + wow * 0.9);
+    this.phase += deltaMs * 0.00035 * speed * (1.0 + wow * 0.9);
 
     final Target t = this.target.getEnum();
     if (t != Target.CYLINDER) {
@@ -123,7 +123,7 @@ public class ParticleWave extends ParameterPattern {
     final double amp = h * 0.18 * (1.0 + wow * 1.2);
     final double thick = h * (0.12 + getSize() * 0.28);
     final double foamW = 1.6 + wow * 1.8;
-    final double drift = 0.16 * Math.sin(this.timeMs * 2.0e-5 * (0.5 + speed));
+    final double drift = 0.16 * Math.sin(this.timeMs * 8.0e-5 * (0.5 + speed));
     final double ph = this.phase;
 
     // shimmer quanta: grains flicker fast, stars twinkle slow

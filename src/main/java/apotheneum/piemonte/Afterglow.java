@@ -59,6 +59,29 @@ public class Afterglow extends ParameterPattern {
 
   private double phase = 0;
 
+  // stratified star placement per surface: even spread with jitter, stable
+  // across frames (the old per-frame hash clustered mid-surface)
+  private final double[][] starX = new double[2][MAX_STARS];
+  private final double[][] starY = new double[2][MAX_STARS];
+  private final boolean[] placed = new boolean[2];
+
+  private void place(int surf, int w, int h) {
+    // shuffle column strata so neighbors aren't sequential
+    final int[] slot = new int[MAX_STARS];
+    for (int i = 0; i < MAX_STARS; ++i) slot[i] = i;
+    for (int i = MAX_STARS - 1; i > 0; --i) {
+      int j = (int) (Math.random() * (i + 1));
+      int tmp = slot[i]; slot[i] = slot[j]; slot[j] = tmp;
+    }
+    for (int i = 0; i < MAX_STARS; ++i) {
+      this.starX[surf][i] = (slot[i] + 0.15 + Math.random() * 0.7) / MAX_STARS * w;
+      // stratify vertically in interleaved bands for full top-to-bottom coverage
+      final double band = (i % 6 + Math.random()) / 6.0;
+      this.starY[surf][i] = 2 + band * (h - 4);
+    }
+    this.placed[surf] = true;
+  }
+
   // audio: kicks flare the cores, drops send one wave from every star at once
   private double bassAvg, prevBass, sinceBeatMs = 1e9;
   private double levelEnv = 0;
@@ -130,10 +153,10 @@ public class Afterglow extends ParameterPattern {
 
     final Target t = this.target.getEnum();
     if (t != Target.CYLINDER) {
-      step(Apotheneum.cube.exterior, 1);
+      step(Apotheneum.cube.exterior, 0);
     }
     if (t != Target.CUBE) {
-      step(Apotheneum.cylinder.exterior, 2);
+      step(Apotheneum.cylinder.exterior, 1);
     }
     copyExterior();
   }
@@ -141,6 +164,9 @@ public class Afterglow extends ParameterPattern {
   private void step(Apotheneum.Orientation o, int seed) {
     final int w = o.width();
     final int h = o.height();
+    if (!this.placed[seed]) {
+      place(seed, w, h);
+    }
     final int base = getColor();
     final int dot = LXColor.lerp(base, LXColor.WHITE, 0.75f); // near-white pulses
     final double wow = getWow();
@@ -152,9 +178,9 @@ public class Afterglow extends ParameterPattern {
     final double gain = (1.0 + wow * 0.5) * (1.0 + this.levelEnv * 0.5 + this.beatPulse * 0.35);
 
     for (int i = 0; i < nStars; ++i) {
-      final int sx = (int) (hashd(i * 31 + seed * 7919) * w);
-      final int sy = 2 + (int) (hashd(i * 53 + seed * 104729) * (h - 4));
-      final double offset = hashd(i * 97 + seed * 1299709);
+      final double sx = this.starX[seed][i];
+      final double sy = this.starY[seed][i];
+      final double offset = hashd(i * 97 + (seed + 1) * 1299709);
 
       // each joint has its own set of rays at arbitrary angles, like edges
       // meeting at a vertex — no lit core, just dots constantly leaving it

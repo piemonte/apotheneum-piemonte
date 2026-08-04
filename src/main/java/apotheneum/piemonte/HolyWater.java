@@ -3,13 +3,14 @@
  *
  * Created by patrick piemonte
  *
- * HolyWater — thin waterfalls of light pour from the top rim like strands in a
- * cathedral dome, each a coherent laser-thin stream with a long tail. When a
- * stream reaches the floor it splashes, splaying light outward through the
- * bottom rows in a parabolic pool. The whole scene journeys slowly through
- * four hues — emerald, red, indigo, violet — and a faint warm ring mid-height
- * echoes the balconies of the hall. Beats throw extra splash. Modeled on the
- * holotrigger rotunda installation.
+ * HolyWater — standing strands of light hang from the rim to the floor like a
+ * beaded curtain in a cathedral dome, each one scintillating downward so the
+ * light seems to pour without ever falling. At the base every strand bends
+ * into a hook and trails outward along the floor, and a bright fountain
+ * cluster glows at the center of each wall. The room moves through scenes —
+ * green with a red heart, full green flood, blue beaded sparkle, violet dusk,
+ * a gold flood, red matrix, a pale white passage, and near-blackout lulls —
+ * some easing in, some snapping. Modeled on the holotrigger rotunda show.
  *
  * Best viewed in deep playa or in the dust.
  */
@@ -27,48 +28,35 @@ import heronarts.lx.utils.LXUtils;
 @LXCategory("Apotheneum/piemonte")
 public class HolyWater extends StrandPattern {
 
-  private static final int MAX_STREAMS = 24;
-  private static final double[] JOURNEY = { 130, 2, 225, 280 }; // emerald, red, indigo, violet
-  private static final double HOLD_MS = 11000;
-  private static final double XFADE_MS = 3000;
-  private static final double SPLASH_MS = 1600; // splash curls linger on the floor
+  private static final int MAX_STREAMS = 40;
+  // scene legs: { perimeterHue, sat, bright, centerHue, holdMs, snap(0/1) }
+  private static final double[][] SCENES = {
+    { 120, 90, 100,   0,  6000, 0 }, // green columns, red center heart
+    { 130, 90, 100, 130,  3500, 1 }, // full green flood (snaps in)
+    { 225, 88,  95, 205,  7000, 0 }, // blue beaded sparkle, cyan center
+    { 275, 80,  80, 350,  4500, 0 }, // violet dusk, rose center
+    {  48, 95, 100,  48,  3500, 1 }, // gold flood
+    {   0, 92, 100, 225,  6000, 0 }, // red matrix, blue center
+    {   0,  0,  85,   0,  3500, 0 }, // white/lavender passage
+    {   0, 60,   8,   0,  2500, 1 }, // near-blackout lull (red embers)
+  };
+  private static final double XFADE_MS = 1200;
+  private static final double SNAP_MS = 180;
 
   public final DiscreteParameter streams =
-    new DiscreteParameter("Streams", 12, 4, MAX_STREAMS)
-    .setDescription("Waterfall streams per surface");
+    new DiscreteParameter("Streams", 16, 6, MAX_STREAMS)
+    .setDescription("Standing strands per surface");
 
   public final CompoundParameter sensitivity =
     new CompoundParameter("Sens", 0.5, 0, 1)
-    .setDescription("Audio sensitivity of splash flourishes");
+    .setDescription("Audio sensitivity of shimmer surge");
 
-  private final class Surface {
-    boolean inited;
-    final double[] sx = new double[MAX_STREAMS];
-    final double[] sy = new double[MAX_STREAMS];
-    final double[] sv = new double[MAX_STREAMS];
-    final double[] splash = new double[MAX_STREAMS]; // >0 while splashing (ms left)
-    final double[] splashX = new double[MAX_STREAMS];
-    void reset(int w) {
-      for (int i = 0; i < MAX_STREAMS; ++i) {
-        respawn(this, i, w, true);
-        this.splash[i] = 0;
-      }
-      this.inited = true;
-    }
-  }
-
-  private static void respawn(Surface s, int i, int w, boolean scatter) {
-    s.sx[i] = Math.random() * w;
-    s.sy[i] = scatter ? Math.random() * 30 : -(Math.random() * 8);
-    s.sv[i] = 0.14 + Math.random() * 0.10; // beams drop near-instantly (~0.4-0.6s)
-  }
-
-  private final Surface cube = new Surface();
-  private final Surface cylinder = new Surface();
   private double pulse = 0;
+  private double sceneClock = 0;
+  private int scene = 0;
 
   public HolyWater(LX lx) {
-    // Base registers color (hue shift), speed (pour rate), size (tail length).
+    // Base registers color (hue shift), speed (scene pace + shimmer), size (strand weight).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("streams", this.streams);
     addParameter("sensitivity", this.sensitivity);
@@ -80,86 +68,119 @@ public class HolyWater extends StrandPattern {
     return 1.05 + (1 - this.sensitivity.getValue()) * 0.7;
   }
 
+  private static double hashd(int n) {
+    int h = n * 374761393;
+    h = (h ^ (h >>> 13)) * 1103515245;
+    h ^= (h >>> 16);
+    return (h & 0x7fffffff) / (double) 0x7fffffff;
+  }
+
   @Override
   protected void advance(double deltaMs) {
     if (this.beat) {
       this.pulse = 1;
     }
     this.pulse *= Math.exp(-deltaMs / 220.0);
+    final double speed = Math.max(0.05, getSpeed());
+    this.sceneClock += deltaMs * speed * 2 * (1 + getWow() * 0.5);
+    final double[] cur = SCENES[this.scene];
+    if (this.sceneClock >= cur[4]) {
+      this.sceneClock = 0;
+      this.scene = (this.scene + 1) % SCENES.length;
+    }
   }
 
-  /** Journey hue with eased crossfades between held states. */
-  private double journeyHue() {
-    final double cycle = HOLD_MS + XFADE_MS;
-    final double t = this.timeMs / cycle;
-    final int leg = (int) Math.floor(t);
-    final double into = (t - leg) * cycle;
-    final double f = LXUtils.clamp((into - HOLD_MS) / XFADE_MS, 0, 1);
-    final double e = f * f * (3 - 2 * f);
-    final double a = JOURNEY[((leg % JOURNEY.length) + JOURNEY.length) % JOURNEY.length];
-    final double b = JOURNEY[(((leg + 1) % JOURNEY.length) + JOURNEY.length) % JOURNEY.length];
-    double d = ((b - a) % 360 + 360) % 360;
-    if (d > 180) d -= 360;
-    return a + d * e;
+  /** Eased 0..1 entry progress into the current scene (fast when it snaps). */
+  private double sceneIn() {
+    final double dur = (SCENES[this.scene][5] > 0.5) ? SNAP_MS : XFADE_MS;
+    final double f = LXUtils.clamp(this.sceneClock / dur, 0, 1);
+    return f * f * (3 - 2 * f);
   }
 
   @Override
   protected void renderStrands(Apotheneum.Orientation o, double deltaMs, boolean isCube) {
-    final Surface s = isCube ? this.cube : this.cylinder;
     final int w = o.width();
     final int h = o.height();
-    if (!s.inited) s.reset(w);
-
     final double wow = getWow();
-    final double speed = Math.max(0.05, getSpeed());
     final double hueShift = LXColor.h(getColor());
-    final double hue = journeyHue() + hueShift;
-    final int col = LXColor.hsb((float) (((hue % 360) + 360) % 360), 90, 100);
-    // second simultaneous beam color (reference: blue sides, green center)
-    final int col2 = LXColor.hsb((float) ((((hue - 100) % 360) + 360) % 360), 90, 100);
-    final int scrim = LXColor.hsb((float) (((230 + hueShift) % 360)), 80, 100);
 
-    final int count = Math.min(MAX_STREAMS, this.streams.getValuei() + (int) Math.round(wow * 8));
-    final double tail = (16 + getSize() * 20) * (1 + wow * 0.3); // near-full-height columns
-    final int floorY = h - 7;
+    final double[] cur = SCENES[this.scene];
+    final double[] prev = SCENES[((this.scene - 1) % SCENES.length + SCENES.length) % SCENES.length];
+    final double in = sceneIn();
+    final double hue = LXUtils.lerp(prev[0], prev[0] + wrapDeg(cur[0] - prev[0]), in) + hueShift;
+    final double sat = LXUtils.lerp(prev[1], cur[1], in);
+    final double sceneBright = LXUtils.lerp(prev[2], cur[2], in) / 100.0;
+    final double cHue = LXUtils.lerp(prev[3], prev[3] + wrapDeg(cur[3] - prev[3]), in) + hueShift;
+    final int colPerim = LXColor.hsb((float) (((hue % 360) + 360) % 360), (float) sat, 100);
+    final int colCenter = LXColor.hsb((float) (((cHue % 360) + 360) % 360),
+      (float) Math.max(sat, 60), 100);
+
+    // strand population scales with scene brightness: floods fill the wall,
+    // blackout lulls collapse to a few dim embers
+    final int count = Math.max(2, (int) Math.round(
+      Math.min(MAX_STREAMS, this.streams.getValuei() + wow * 8) * (0.25 + 0.75 * sceneBright)));
+    final boolean glyphScene = (this.scene == 5 || this.scene == 0); // matrix-textured legs
+    final double shimSurge = 1.0 + this.levelEnv * this.sensitivity.getValue() + this.pulse * 0.4;
+    final int floorY = h - 6;
 
     for (int i = 0; i < count; ++i) {
-      final int streamCol = (i % 3 == 2) ? col2 : col; // dual-color beam field
-      if (s.splash[i] > 0) {
-        // splash: long-lived curling pool splaying wide through the bottom rows
-        s.splash[i] -= deltaMs;
-        final double f = LXUtils.clamp(s.splash[i] / SPLASH_MS, 0, 1);
-        final double grow = 1.0 - f * f; // fast splay, slow drift
-        final double spread = grow * (11 + wow * 5 + this.pulse * 4);
-        final double wiggle = Math.sin(this.timeMs * 0.004 + i * 2.1) * 1.5; // drifting curl
-        for (int dx = (int) -spread; dx <= (int) spread; ++dx) {
-          final double u = (spread <= 0) ? 0 : Math.abs(dx) / spread;
-          final int yy = floorY + (int) Math.round((1.0 - u * u) * 4 + wiggle * u);
-          final double b = (0.25 + 0.75 * f) * (1.0 - u * 0.7) * (1.1 + this.pulse * 0.6);
-          addPix(o, (int) s.splashX[i] + dx, Math.min(h - 1, Math.max(floorY, yy)), streamCol, b);
-          addPix(o, (int) s.splashX[i] + dx, h - 1, streamCol, b * 0.5); // pool on the floor line
+      // fixed even spacing with per-strand jitter: a standing curtain
+      final int cx = (int) ((i + 0.5) * w / count + (hashd(i * 31 + 7) - 0.5) * 3);
+      // center/perimeter bicolor split: strands near each wall's center take the accent
+      final double centerDist = Math.abs(((cx % w) + w) % w % (isCube ? 50 : w)
+        - (isCube ? 25 : w / 2)) / (double) (isCube ? 25 : w / 2);
+      final int col = (centerDist < 0.25) ? colCenter : colPerim;
+
+      for (int y = 0; y <= floorY; ++y) {
+        double b;
+        if (glyphScene) {
+          // blocky code-rain segments descending
+          final int seg = (int) Math.floor((y - this.timeMs * 0.010) / 3.0);
+          b = (hashd(cx * 131 + seg * 977) > 0.45) ? 0.85 : 0.08;
+        } else {
+          // beaded scintillation scrolling down a stationary strand
+          final double spark = hashd(cx * 262147 + (int) Math.floor(y - this.timeMs * 0.012) * 8191);
+          b = (spark > 0.55) ? 0.55 + 0.45 * spark : 0.12;
         }
-        if (s.splash[i] <= 0) {
-          respawn(s, i, w, false);
-        }
-        continue;
+        b *= sceneBright * shimSurge * (0.75 + 0.25 * drip(y, h)) * (0.7 + 0.3 * getSize());
+        addPix(o, cx, y, col, b);
       }
 
-      s.sy[i] += s.sv[i] * speed * 60 * deltaMs * 0.016;
-      if (s.sy[i] >= floorY) {
-        s.splash[i] = SPLASH_MS;
-        s.splashX[i] = s.sx[i];
-        continue;
+      // persistent floor hook curling outward
+      final int dir = (hashd(i * 53 + 11) < 0.5) ? -1 : 1;
+      for (int k = 1; k <= 6; ++k) {
+        final double wig = Math.sin(this.timeMs * 0.002 + i * 1.7) * 1.0;
+        final int yy = Math.min(h - 1, floorY + (int) Math.round(k * 0.4 + wig * (k / 6.0)));
+        addPix(o, cx + dir * k, yy, col, sceneBright * (1.0 - k / 8.0) * 0.8);
       }
-      // laser-thin coherent stream with a long tail
-      comet(o, s.sx[i], s.sy[i], tail, streamCol, 0.95 + this.pulse * 0.3, true);
     }
 
-    // persistent horizontal waterline scrim (~48% height, always blue-family)
-    final int scrimY = (int) (h * 0.48);
-    for (int x = 0; x < w; ++x) {
-      addPix(o, x, scrimY, scrim, 0.15);
-      addPix(o, x, scrimY + 1, scrim, 0.07);
+    // fountain cluster glowing at the center of each wall
+    final int nWalls = isCube ? 4 : 1;
+    final int wallW = w / nWalls;
+    for (int wi = 0; wi < nWalls; ++wi) {
+      final int cx0 = wi * wallW + wallW / 2;
+      for (int dx = -3; dx <= 3; ++dx) {
+        for (int y = floorY; y < h; ++y) {
+          final double g = Math.exp(-dx * dx / 4.0) * (0.55 + this.pulse * 0.3);
+          addPix(o, cx0 + dx, y, colCenter, g * sceneBright);
+        }
+      }
     }
+
+    // waterline scrim: only in the blue scenes, at ~43% height
+    if (this.scene == 2) {
+      final int scrimY = (int) (h * 0.43);
+      final int scrim = LXColor.hsb((float) (((215 + hueShift) % 360)), 80, 100);
+      for (int x = 0; x < w; ++x) {
+        addPix(o, x, scrimY, scrim, 0.22 * in);
+        addPix(o, x, scrimY + 1, scrim, 0.10 * in);
+      }
+    }
+  }
+
+  private static double wrapDeg(double d) {
+    d = ((d % 360) + 360) % 360;
+    return (d > 180) ? d - 360 : d;
   }
 }

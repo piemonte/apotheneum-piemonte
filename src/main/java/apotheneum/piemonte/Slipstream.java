@@ -3,14 +3,17 @@
  *
  * Created by patrick piemonte
  *
- * Slipstream — cylinder only. You stand where the performer sat: dotted rays of
- * light pour down the walls all around you, chains of dashes streaming along
- * each ray like particle beams raking outward across a floor. The rays breathe
- * with the music — sparse embers in the quiet, dense comet streams as the level
- * rises — and on a big hit the whole room floods with light while a halo ring
- * blooms at the top rim. The palette drifts slowly through scenes: rose, then
- * emerald, teal flood, blue-white, and finally mixed multicolor embers.
- * Modeled on the ksawerykomputery studio floor piece.
+ * Slipstream — cylinder only. You stand where the performer sat, on a floor of
+ * LED dots: dotted rays fan outward all around you — up the walls, since out
+ * on the floor is up on the cylinder — their dot-chains crawling slowly
+ * outward, faster on the bass. Dotted rings hug the center below them, red
+ * against the cool rays. On every hit a wavefront of brightness blooms from
+ * the center to the rim in under half a second; energetic sections keep the
+ * whole room saturated in sustained color, and between sections everything
+ * collapses to a sparse starfield of twinkling white-blue dots. The palette
+ * steps through the reference's arc: red, emerald, teal, blue, a split
+ * red/blue ring, and a magenta haze. Modeled on the ksawerykomputery studio
+ * floor piece.
  *
  * Best viewed in deep playa or in the dust.
  */
@@ -29,41 +32,41 @@ import heronarts.lx.utils.LXUtils;
 public class Slipstream extends ParameterPattern {
 
   private static final int MAX_RAYS = 90;
-  private static final double SCENE_MS = 20000;  // per palette scene
-  private static final double SCENE_XFADE = 3000;
-  private static final double DUO = -1000;       // red/blue split ring, slowly rotating
-  // scene hues; NaN = multicolor embers (per-ray hue)
-  private static final double[] SCENES = { 350, 130, 175, 225, DUO, Double.NaN };
+  private static final double SCENE_MS = 6700;   // per palette scene (~40s arc / 6)
+  private static final double SCENE_XFADE = 1500;
+  private static final double DUO = -1000;       // red/blue split ring scene
+  private static final double DOT_SPACING = 2.6; // cells between ray dots
+  private static final double BLOOM_MS = 400;    // center->rim wavefront
+  // scene hues matching the reference arc: red, emerald, teal, blue, duo, magenta
+  private static final double[] SCENES = { 358, 124, 180, 228, DUO, 292 };
 
   public final DiscreteParameter rays =
-    new DiscreteParameter("Rays", 48, 12, MAX_RAYS)
-    .setDescription("How many rays stream down the cylinder");
+    new DiscreteParameter("Rays", 56, 12, MAX_RAYS)
+    .setDescription("How many dotted rays fan around the cylinder");
 
   public final CompoundParameter sensitivity =
     new CompoundParameter("Sens", 0.5, 0, 1)
-    .setDescription("How easily the music floods the room");
+    .setDescription("How easily the music blooms and fills the room");
 
   // per-ray state
-  private final double[] rx = new double[MAX_RAYS];      // column position
-  private final double[] rphase = new double[MAX_RAYS];  // dash phase offset
-  private final double[] rspeed = new double[MAX_RAYS];  // per-ray flow factor
-  private final double[] rlen = new double[MAX_RAYS];    // length factor
-  private final double[] rswirl = new double[MAX_RAYS];  // x drift per row
-  private final double[] rhue = new double[MAX_RAYS];    // multicolor scene hue
+  private final double[] rx = new double[MAX_RAYS];   // column position (fixed)
+  private final double[] rlen = new double[MAX_RAYS]; // 0.85..1.0 coordinated length
+  private final double[] binMag = new double[MAX_RAYS];
   private boolean inited = false;
 
-  // audio (Cope-style)
+  // audio
   private double bassAvg, prevBass, sinceBeatMs = 1e9;
   private double levelEnv = 0;
-  private double floodEnv = 0;
-  private double floodHold = 0; // flood plateaus bright, then cuts hard
-  private double haloEnv = 0;
+  private double bassEnv = 0;
+  private double floodEnv = 0;   // sustained section fill (slow release)
+  private double bloomT = -1;    // center->rim wavefront progress, <0 idle
   private double pulse = 0;
   private double timeMs = 0;
-  private double flow = 0;
+  private double dotFlow = 0;    // outward crawl of the dot chains
+  private double ringFlow = 0;
 
   public Slipstream(LX lx) {
-    // Base registers color (global hue shift), speed (stream rate), size (dash scale).
+    // Base registers color (global hue shift), speed (crawl rate), size (dot size/spacing).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("rays", this.rays);
     addParameter("sensitivity", this.sensitivity);
@@ -79,13 +82,17 @@ public class Slipstream extends ParameterPattern {
   private void initRays(int w) {
     for (int i = 0; i < MAX_RAYS; ++i) {
       this.rx[i] = hashd(i * 7 + 1) * w;
-      this.rphase[i] = hashd(i * 13 + 3);
-      this.rspeed[i] = 0.7 + 0.6 * hashd(i * 29 + 5);
-      this.rlen[i] = 0.55 + 0.45 * hashd(i * 31 + 11);
-      this.rswirl[i] = (hashd(i * 37 + 17) - 0.5) * 0.16;
-      this.rhue[i] = hashd(i * 41 + 23) * 360;
+      this.rlen[i] = 0.85 + 0.15 * hashd(i * 31 + 11);
     }
     this.inited = true;
+  }
+
+  private double band(int i, int n) {
+    heronarts.lx.audio.GraphicMeter m = this.lx.engine.audio.meter;
+    int nb = Math.max(1, m.numBands);
+    int lo = i * nb / n;
+    int hi = Math.max(lo + 1, (i + 1) * nb / n);
+    return m.getAveragef(lo, hi - lo);
   }
 
   private boolean detect(double deltaMs) {
@@ -105,14 +112,13 @@ public class Slipstream extends ParameterPattern {
       this.sinceBeatMs = 0;
     }
     double level = m.getAveragef(0, nb);
-    double alpha = (level > this.levelEnv)
-      ? 1 - Math.exp(-deltaMs / 25.0)
-      : 1 - Math.exp(-deltaMs / 220.0);
-    this.levelEnv += (level - this.levelEnv) * alpha;
+    double aUp = 1 - Math.exp(-deltaMs / 25.0);
+    double aDn = 1 - Math.exp(-deltaMs / 220.0);
+    this.levelEnv += (level - this.levelEnv) * ((level > this.levelEnv) ? aUp : aDn);
+    this.bassEnv += (bass - this.bassEnv) * ((bass > this.bassEnv) ? aUp : aDn);
     return beat;
   }
 
-  /** Scene hue at the current time, with crossfade; NaN result = multicolor. */
   private double sceneHue(int which) {
     return SCENES[((which % SCENES.length) + SCENES.length) % SCENES.length];
   }
@@ -132,94 +138,141 @@ public class Slipstream extends ParameterPattern {
     final double speed = Math.max(0.02, getSpeed());
     final double wow = getWow();
     final boolean beat = detect(deltaMs);
-    this.flow += deltaMs * 0.012 * speed;
 
-    // climaxes: strong onsets flood the room + bloom the halo; Wow makes them easier/hotter
-    final double bassRatio = LXUtils.clamp((this.prevBass / Math.max(1e-4, this.bassAvg) - 1.0) / 1.5, 0, 1);
+    // outward crawl of dot chains: slow at rest, faster on bass
+    this.dotFlow += deltaMs * speed * (0.004 + this.bassEnv * 0.02) * DOT_SPACING;
+    this.ringFlow += deltaMs * speed * (0.002 + this.bassEnv * 0.012);
+
     if (beat) {
       this.pulse = 1;
-      if (bassRatio > 0.55 - wow * 0.25 || this.levelEnv > 0.5 - wow * 0.2) {
-        this.floodEnv = 1;
-        this.floodHold = 500; // reference: flood plateaus ~500ms, then a hard cut
-        this.haloEnv = 1;
+      if (this.bloomT < 0) {
+        this.bloomT = 0; // fire a center->rim brightness wavefront
       }
     }
     this.pulse *= Math.exp(-deltaMs / 160.0);
-    if (this.floodHold > 0) {
-      this.floodHold -= deltaMs;
-    } else {
-      this.floodEnv *= Math.exp(-deltaMs / 130.0); // sharp extinguish
+    if (this.bloomT >= 0) {
+      this.bloomT += deltaMs / BLOOM_MS;
+      if (this.bloomT >= 1.2) this.bloomT = -1;
     }
-    this.haloEnv *= Math.exp(-deltaMs / 1200.0); // magenta haze lingers
+    // sustained section fill: fast attack, ~2s release into the breakdown
+    final double floodTarget = LXUtils.clamp(this.levelEnv * (1.4 + wow * 0.4), 0, 1);
+    final double fa = (floodTarget > this.floodEnv)
+      ? 1 - Math.exp(-deltaMs / 120.0)
+      : 1 - Math.exp(-deltaMs / 2000.0);
+    this.floodEnv += (floodTarget - this.floodEnv) * fa;
 
-    // palette scene morph (Color knob rotates the whole journey)
+    // palette scenes stepping through the reference arc
     final double hueShift = LXColor.h(getColor());
     final double sceneT = this.timeMs / SCENE_MS;
     final int scene = (int) Math.floor(sceneT);
-    final double intoMs = (sceneT - scene) * SCENE_MS;
-    final double xfade = LXUtils.clamp(intoMs / SCENE_XFADE, 0, 1); // 0=prev scene, 1=current
+    final double xfade = LXUtils.clamp((sceneT - scene) * SCENE_MS / SCENE_XFADE, 0, 1);
     final double huePrev = sceneHue(scene - 1);
     final double hueCur = sceneHue(scene);
+    final boolean duoNow = (hueCur == DUO);
+    final double resolvedPrev = (huePrev == DUO) ? 228 : huePrev;
+    final double resolvedCur = duoNow ? 228 : hueCur;
+    final double hueMain = LXUtils.lerp(resolvedPrev,
+      resolvedPrev + wrapDeg(resolvedCur - resolvedPrev), xfade) + hueShift;
+    final int col = LXColor.hsb((float) (((hueMain % 360) + 360) % 360), 88, 100);
+    final int hot = LXColor.lerp(col, LXColor.WHITE, 0.6f);
+    final int ringRed = LXColor.hsb((float) (((358 + hueShift) % 360)), 95, 100);
+    final int duoRed = ringRed;
+    final int duoBlue = LXColor.hsb((float) (((222 + hueShift) % 360)), 92, 100);
 
-    final double dashPeriod = 2.5 + getSize() * 4.0;
-    final double duty = 0.42;
+    final boolean breakdown = this.levelEnv < 0.06;
     final int count = Math.min(MAX_RAYS, this.rays.getValuei() + (int) Math.round(wow * 20));
-    // rays reach further down the walls as the music swells
-    final double reach = h * (0.35 + 0.65 * LXUtils.clamp(this.levelEnv * 1.6 + this.pulse * 0.3, 0, 1));
+    final int nBins = Math.max(8, count / 3);
+    final double aBin = 1 - Math.exp(-deltaMs / 90.0);
+    final double dotR = 0.5 + getSize() * 0.8;
+    final double spacing = DOT_SPACING + getSize() * 1.5;
+    final double bloomFront = (this.bloomT >= 0) ? (1.0 - this.bloomT) * h : -100;
+    final double fieldB = (0.40 + 0.60 * this.floodEnv) * (1.0 + this.pulse * 0.35);
 
-    for (int i = 0; i < count; ++i) {
-      // choose this ray's hue: crossfade scenes; NaN = per-ray multicolor;
-      // DUO = red/blue opposition split by a slowly rotating boundary
-      final double duoHue = ((this.rx[i] / w + this.timeMs * 0.00008) % 1.0 < 0.5) ? 2 : 220;
-      double hue;
-      double hp = (huePrev == DUO) ? duoHue : (Double.isNaN(huePrev) ? this.rhue[i] : huePrev);
-      double hc = (hueCur == DUO) ? duoHue : (Double.isNaN(hueCur) ? this.rhue[i] : hueCur);
-      hue = LXUtils.lerp(hp, hp + wrapDeg(hc - hp), xfade) + hueShift;
-      final int col = LXColor.hsb((float) (((hue % 360) + 360) % 360), 82, 100);
-      final int hot = LXColor.lerp(col, LXColor.WHITE, 0.6f);
-
-      final double rayLen = reach * this.rlen[i];
-      final double ph = this.rphase[i] + this.flow * this.rspeed[i];
-      final double bright = (0.55 + 0.45 * this.levelEnv) * (1.0 + this.pulse * 0.5);
-
-      for (int y = 0; y < h; ++y) {
-        // dashes travel down the ray; fade out past the ray's reach
-        double tailFade = 1.0 - LXUtils.clamp((y - rayLen) / 6.0, 0, 1);
-        if (tailFade <= 0) break;
-        double v = y / dashPeriod - ph;
-        double f = v - Math.floor(v);
-        if (f >= duty) continue;
-        // dash profile: bright leading edge, feathered back
-        double dp = 1.0 - Math.abs(f / duty * 2 - 1);
-        double b = bright * tailFade * (0.35 + 0.65 * dp * dp);
-        int xx = (int) Math.round(this.rx[i] + this.rswirl[i] * y);
-        int c = (dp > 0.8) ? hot : col;
-        addPix(o, w, h, xx, y, c, b);
-      }
-    }
-
-    // flood flash: the whole room saturates on a climax
-    if (this.floodEnv > 0.01) {
-      double hueF = (Double.isNaN(hueCur) || hueCur == DUO) ? 175 : hueCur;
-      final int flood = LXColor.hsb((float) ((((hueF + hueShift) % 360) + 360) % 360), 60, 100);
-      final float fb = (float) (this.floodEnv * this.floodEnv * (0.55 + wow * 0.35));
-      final int fc = LXColor.scaleBrightness(flood, fb);
-      for (int x = 0; x < w; ++x) {
-        for (int y = 0; y < h; ++y) {
-          final int idx = o.point(x, y).index;
-          this.colors[idx] = LXColor.lightest(this.colors[idx], fc);
+    if (!breakdown) {
+      // --- dotted radial rays: bottom (center) to top (rim) ---
+      for (int i = 0; i < count; ++i) {
+        this.binMag[i] += (band(i % nBins, nBins) - this.binMag[i]) * aBin;
+        // coordinated length: the field grows and shrinks together
+        final double len = h * LXUtils.clamp(
+          0.30 + 0.65 * this.floodEnv + 0.10 * LXUtils.clamp(this.binMag[i] * 2, 0, 1), 0, 1)
+          * this.rlen[i];
+        final int x = (int) Math.round(this.rx[i]);
+        // DUO scene: red/blue opposition split by a slowly rotating boundary
+        int rayCol = col, rayHot = hot;
+        if (duoNow) {
+          final boolean redSide = ((this.rx[i] / w + this.timeMs * 0.00006) % 1.0) < 0.5;
+          rayCol = redSide ? duoRed : duoBlue;
+          rayHot = LXColor.lerp(rayCol, LXColor.WHITE, 0.6f);
+        }
+        for (int y = h - 1; y >= h - (int) len && y >= 0; --y) {
+          // dotted chain: lit only on the dot cells, crawling outward (upward)
+          final double sdot = ((h - 1 - y) + this.dotFlow) / spacing;
+          final double f = sdot - Math.floor(sdot);
+          if (f > 0.5) continue;
+          double b = fieldB * (0.45 + 0.55 * (1.0 - (double) (h - 1 - y) / Math.max(1, len)));
+          // bloom wavefront sweeping center->rim
+          if (bloomFront > -50) {
+            final double d = y - bloomFront;
+            b *= 1.0 + 1.2 * Math.exp(-d * d / 18.0);
+          }
+          // white-hot core only on the innermost dots
+          final int c = (h - 1 - y < spacing * 2) ? rayHot : rayCol;
+          splat(o, w, h, x, y, dotR, b, c);
         }
       }
-    }
 
-    // halo ring blooming at the top rim — the lingering magenta haze of the reference
-    if (this.haloEnv > 0.01) {
-      final int halo = LXColor.hsb((float) ((((290 + hueShift) % 360) + 360) % 360), 55, 100);
-      for (int y = 0; y < 5; ++y) {
-        double g = this.haloEnv * (0.9 + wow * 0.6) * Math.exp(-y / 1.6);
+      // --- dotted concentric rings hugging the center (bottom region) ---
+      final int nRings = 3;
+      final double ringGap = h * 0.055;
+      final double ringB = fieldB * (0.5 + 0.5 * this.floodEnv);
+      final int ringDotStep = 3;
+      final double duoSpin = duoNow ? this.timeMs * 0.004 : 0;
+      for (int r = 0; r < nRings; ++r) {
+        final double ry = (r * ringGap + this.ringFlow * ringGap) % (h * 0.24);
+        final int yy = h - 2 - (int) Math.round(ry);
+        for (int x = 0; x < w; x += ringDotStep) {
+          int c = ringRed;
+          if (duoNow) {
+            c = (((x + (int) duoSpin) / (w / 4)) % 2 == 0) ? duoRed : duoBlue;
+          }
+          splat(o, w, h, x, yy, dotR, ringB * (0.8 - r * 0.18), c);
+        }
+      }
+
+      // --- sustained chromatic section fill (ambient, saturated) ---
+      if (this.floodEnv > 0.05) {
+        final double haze = (hueCur == 292 || huePrev == 292) ? 0.55 : 0.30;
+        final int fc = LXColor.scaleBrightness(
+          LXColor.hsb((float) (((hueMain % 360) + 360) % 360), 75, 100),
+          (float) (this.floodEnv * this.floodEnv * haze));
         for (int x = 0; x < w; ++x) {
-          addPix(o, w, h, x, y, halo, g);
+          for (int y = 0; y < h; ++y) {
+            final int idx = o.point(x, y).index;
+            this.colors[idx] = LXColor.lightest(this.colors[idx], fc);
+          }
         }
+      }
+
+      // --- center bloom at the floor line on hits ---
+      if (this.pulse > 0.05) {
+        for (int y = h - 5; y < h; ++y) {
+          final double g = this.pulse * (0.8 + wow * 0.5) * Math.exp(-(h - 1 - y) / 1.8);
+          for (int x = 0; x < w; ++x) {
+            splat(o, w, h, x, y, 0.8, g * 0.5, hot);
+          }
+        }
+      }
+    } else {
+      // --- starfield breakdown: sparse random white-blue twinkles ---
+      final int star = LXColor.hsb(210, 30, 100);
+      final int tq = (int) (this.timeMs / 180);
+      final int nStars = (int) (w * h * 0.012);
+      for (int k = 0; k < nStars; ++k) {
+        final int sx = (int) (hashd(k * 31 + tq * 977) * w);
+        final int sy = (int) (hashd(k * 53 + tq * 613) * h);
+        final double tw = hashd(k * 97 + tq * 131);
+        if (tw < 0.45) continue;
+        splat(o, w, h, sx, sy, 0.8, 0.25 + 0.75 * tw, (tw > 0.92) ? LXColor.WHITE : star);
       }
     }
 
@@ -231,11 +284,28 @@ public class Slipstream extends ParameterPattern {
     return (d > 180) ? d - 360 : d;
   }
 
-  private void addPix(Apotheneum.Orientation o, int w, int h, int x, int y, int color, double b) {
-    if (b <= 0.004 || y < 0 || y >= h) return;
-    final int xi = ((x % w) + w) % w;
-    final int idx = o.point(xi, y).index;
-    this.colors[idx] = LXColor.lightest(this.colors[idx],
-      LXColor.scaleBrightness(color, (float) LXUtils.clamp(b, 0, 1)));
+  /** Soft dot; x wraps, y clips. */
+  private void splat(Apotheneum.Orientation o, int w, int h, double x, double y,
+      double r, double bright, int color) {
+    if (bright <= 0.004) return;
+    final int y0 = (int) Math.max(0, Math.floor(y - r));
+    final int y1 = (int) Math.min(h - 1, Math.ceil(y + r));
+    final int x0 = (int) Math.floor(x - r);
+    final int x1 = (int) Math.ceil(x + r);
+    for (int yy = y0; yy <= y1; ++yy) {
+      final double dy = yy - y;
+      for (int xx = x0; xx <= x1; ++xx) {
+        final double dx = xx - x;
+        final double dd = Math.sqrt(dx * dx + dy * dy);
+        if (dd > r + 0.5) continue;
+        final double u = 1.0 - dd / (r + 0.5);
+        final double f = u * u * bright;
+        if (f <= 0.004) continue;
+        final int xi = ((xx % w) + w) % w;
+        final int idx = o.point(xi, yy).index;
+        this.colors[idx] = LXColor.lightest(this.colors[idx],
+          LXColor.scaleBrightness(color, (float) LXUtils.clamp(f, 0, 1)));
+      }
+    }
   }
 }
