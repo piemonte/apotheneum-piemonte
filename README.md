@@ -7,14 +7,45 @@ exterior + interior surfaces, 28,512 nodes).
 
 ## Contents
 
-33 patterns under `apotheneum.piemonte`, including:
+32 patterns under `apotheneum.piemonte`:
 
-- **Video-replica series** — Slipstream, Mainframe, HolyWater, Hexed, Overflow, Whiteout,
-  Motherboard, Pressure, Biorhythm, Heartthrob (holotrigger / ksawerykomputery references)
-- **Originals** — Afterglow, CandyFlip, ComeUp, Cope, Crush, Destination, FeelSomething,
-  Handprint, Liftoff, Origami, ParticleWave, PlayaStrobe, Rain, Replies, ReUp,
-  SpaceBoundSpecies, SpecialKube, Superbloom, TheHumanRace, Trains, Trip, TunnelVision,
-  Vibe
+| Pattern | What it looks like |
+|---|---|
+| **Afterglow** | Joints of light scattered across the surfaces, endlessly exhaling soft white dots outward along rays at arbitrary angles; kicks flare the field, drops send one synchronized wave down every ray |
+| **CandyFlip** | Rainbow comets with white-hot heads roam the walls, each bursting into a fresh generation of comets — a cascading firework of color until the energy runs out |
+| **ComeUp** | A glass of water filling: a turbulent, foamy waterline rises with sparkles and bubbles beneath, cycling to a new hue with every refill; cube, cylinder, or both |
+| **Cope** | Thick bars of light on the structure's vertical edges breathe with the music; bass drops erupt into radial shock rings that bloom across the surfaces |
+| **Crush** | Gradient beams with hot white heads descend and stack from the floor up, flashing on landing, until the whole piece fills into a cycling color gradient |
+| **Destination** | A blazing point at the center of each face throws flickering radial streaks with per-ray hues — a distant sun at the end of a long dark hall |
+| **FeelSomething** | Colored sticks rain down, bounce and tumble end over end, throwing off bursts of white-hot sparks with every impact until they settle |
+| **Handprint** | Procedurally drawn handprints with fingerprint-ridge detail press onto the surfaces like hands on glass, hold, and lift away |
+| **Hexed** | A giant terminal readout: huge white-hot characters over a dim churning field of blue log-glyphs, red/blue strand flares on every swap, and a rare hard red flood |
+| **HolyWater** | Standing beaded strands hang rim to floor, scintillating downward and curling into floor hooks; the room journeys through green, red, blue, gold, white, and blackout scenes |
+| **Liftoff** | Fuses climb every vertical string and burst in bright flashes, ember trails lingering; kicks detonate on the beat and drops launch a multi-rocket volley |
+| **Mainframe** | Emerald matrix-rain and red data-bars persist over a room flood that snaps green↔red through amber, above a warm console ring and glittering green floor puddles |
+| **Motherboard** | A dense fixed strand curtain shimmers downward into a bright floor pool while a circuit maze re-routes at the hang line; the room breathes emerald↔azure through near-black |
+| **Origami** | A sheet ruled with drifting diagonal lines folds on the beat (or the button): flaps sweep over with a white crease flash, each fold revealing a new color layer |
+| **Overflow** | A segmented band of red/green equalizer blocks hangs mid-wall, reconfiguring like letterforms, pulsing with the beat, pooling on the floor, and flooding the room green on drops |
+| **ParticleWave** | A rolling swell of shimmering glitter sweeps around the structure through a dark starfield, foam sparkling along its crest; storms bring blue sparkle bursts |
+| **PlayaStrobe** | A storm-torn glint band rakes continuously around the room over a faint churning floor; the operator's Strobe button fires pulsating white bursts that decay away |
+| **Pressure** | Discrete curtain panels gate hard on/off to the music — a green wall speckled with coexisting red, breathing dark-bright-dark over a warm floor ember that never goes out |
+| **Rain** | A heavy downpour of vertical streaks; each drop splashes on the floor line and the water arcs back up before falling again |
+| **Replies** | Glowing dots glide the interior rings and columns; when two collide they burst, and the matching exterior surface flickers in reply — the outer chamber answering the inner |
+| **ReUp** | Every string lit solid; bass hits knock random groups dark and they fade back up — an audio curtain that keeps rebuilding itself |
+| **Slipstream** | Cylinder only: dotted rays fan up the walls around you with red rings hugging the base; beats bloom brightness from the center outward, quiet collapses into a twinkling starfield |
+| **SpaceBoundSpecies** | A flight through a starfield, each face a window with its own vanishing point — drifting twinkles with diffraction spikes at rest, hyperspace warp streaks at speed |
+| **SpecialKube** | Spinning wireframe 3D cubes tumble down the panels; the special ones glitch — jittering, flashing cyan-white, and strobing in sync |
+| **Superbloom** | Green pixel-chunk buds swell and blossom into giant top-down flowers in wild colors — six species with alternating petals — spinning to the music before folding away |
+| **TheHumanRace** | A vast landscape of little glowing stick figures stretching to the horizon, wrapped 360° around you, swaying as a slow camera drifts across the crowd |
+| **Trains** | Thick broken lines of light march down the surfaces in unison, four segments per side; Wow makes them glitch, jitter, and strobe cyan-white |
+| **Trip** | Thick concentric diamond bands spiral out from center in a shifting rainbow, each band whitening along its spine; Wow ripples the field like a flag |
+| **TunnelVision** | Vertical tunnels of glowing hoops climb the walls ring by ring on every bass hit, hold, then collapse — more and taller tunnels the louder it gets |
+| **UFOAbduction** | Chunky green blocks beam upward with long gradient tails — zooming in, passing through the center in slow motion, then bursting out the top — while thin red beams pulse down through them |
+| **Vibe** | A field of fine flowing waveform lines ripples like silk in wind, crests glowing bright over complementary-tinted shadow, streaming seamlessly around the sculpture |
+| **Whiteout** | Wide silver waterfalls: a white-hot emitter band at the top feeds dense scintillating rain that dissolves toward a dark floor, split by thin dark seams |
+
+Also in the package:
+
 - **Base classes** — `ParameterPattern` (canonical Color / Speed / Size / Wow leading
   controls) and `StrandPattern` (vertical light-strand engine with audio helpers)
 - `projects/Apotheneum-VJ.lxp` — a dual-deck VJ project (EXT-A/B + INT-A/B channels,
