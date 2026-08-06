@@ -143,7 +143,7 @@ public class ComeUp extends ParameterPattern {
   }
 
   public final EnumParameter<Target> target =
-    new EnumParameter<Target>("Target", Target.CYLINDER)
+    new EnumParameter<Target>("Target", Target.BOTH)
     .setDescription("Which structures the glass fills");
 
   private final Tide exterior = new Tide(0.0, 0.0, 0.0);
