@@ -7,7 +7,7 @@ exterior + interior surfaces, 28,512 nodes).
 
 ## Contents
 
-32 patterns under `apotheneum.piemonte`:
+34 patterns under `apotheneum.piemonte`:
 
 | Pattern | What it looks like |
 |---|---|
@@ -36,6 +36,7 @@ exterior + interior surfaces, 28,512 nodes).
 | **SpaceBoundSpecies** | A flight through a starfield, each face a window with its own vanishing point — drifting twinkles with diffraction spikes at rest, hyperspace warp streaks at speed |
 | **SpecialKube** | Spinning wireframe 3D cubes tumble down the panels; the special ones glitch — jittering, flashing cyan-white, and strobing in sync |
 | **Superbloom** | Green pixel-chunk buds swell and blossom into giant top-down flowers in wild colors — six species with alternating petals — spinning to the music before folding away |
+| **Synapse** | Green circuit traces ignite on bass, pitch, or random hits — right-angle paths drawing themselves in, dashed and twinkling with white-hot junctions, eroding away dot by dot |
 | **TheHumanRace** | A vast landscape of little glowing stick figures stretching to the horizon, wrapped 360° around you, swaying as a slow camera drifts across the crowd |
 | **Trains** | Thick broken lines of light march down the surfaces in unison, four segments per side; Wow makes them glitch, jitter, and strobe cyan-white |
 | **Trip** | Thick concentric diamond bands spiral out from center in a shifting rainbow, each band whitening along its spine; Wow ripples the field like a flag |
@@ -43,6 +44,7 @@ exterior + interior surfaces, 28,512 nodes).
 | **UFOAbduction** | Chunky green blocks beam upward with long gradient tails — zooming in, passing through the center in slow motion, then bursting out the top — while thin red beams pulse down through them |
 | **Vibe** | A field of fine flowing waveform lines ripples like silk in wind, crests glowing bright over complementary-tinted shadow, streaming seamlessly around the sculpture |
 | **Whiteout** | Wide silver waterfalls: a white-hot emitter band at the top feeds dense scintillating rain that dissolves toward a dark floor, split by thin dark seams |
+| **Zoetrope** | Dotted red bars with hot amber cores orbit the fixture like slits in a zoetrope drum; Wow steps the spin into glitchy beat-locked jumps |
 
 Also in the package:
 

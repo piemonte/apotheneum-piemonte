@@ -4289,6 +4289,14 @@
               {
                 "id": 9842392,
                 "class": "apotheneum.piemonte.Whiteout"
+              },
+              {
+                "id": 9843711,
+                "class": "apotheneum.piemonte.Synapse"
+              },
+              {
+                "id": 9843712,
+                "class": "apotheneum.piemonte.Zoetrope"
               }
             ]
           },
@@ -4580,6 +4588,14 @@
               {
                 "id": 9842463,
                 "class": "apotheneum.piemonte.Whiteout"
+              },
+              {
+                "id": 9843713,
+                "class": "apotheneum.piemonte.Synapse"
+              },
+              {
+                "id": 9843714,
+                "class": "apotheneum.piemonte.Zoetrope"
               }
             ]
           },
@@ -4782,6 +4798,14 @@
               {
                 "id": 9842531,
                 "class": "apotheneum.piemonte.Whiteout"
+              },
+              {
+                "id": 9843715,
+                "class": "apotheneum.piemonte.Synapse"
+              },
+              {
+                "id": 9843716,
+                "class": "apotheneum.piemonte.Zoetrope"
               }
             ]
           },
@@ -5073,6 +5097,14 @@
               {
                 "id": 9842602,
                 "class": "apotheneum.piemonte.Whiteout"
+              },
+              {
+                "id": 9843717,
+                "class": "apotheneum.piemonte.Synapse"
+              },
+              {
+                "id": 9843718,
+                "class": "apotheneum.piemonte.Zoetrope"
               }
             ]
           },

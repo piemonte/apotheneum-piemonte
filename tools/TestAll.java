@@ -17,8 +17,8 @@ public class TestAll {
     "FeelSomething", "Handprint", "Hexed", "HolyWater", "Liftoff",
     "Mainframe", "Motherboard", "Origami", "Overflow", "ParticleWave", "PlayaStrobe",
     "Pressure", "Rain", "Replies", "ReUp", "Slipstream", "SpaceBoundSpecies",
-    "SpecialKube", "Superbloom", "TheHumanRace", "Trains", "Trip", "TunnelVision", "UFOAbduction",
-    "Vibe", "Whiteout"
+    "SpecialKube", "Superbloom", "Synapse", "TheHumanRace", "Trains", "Trip", "TunnelVision", "UFOAbduction",
+    "Vibe", "Whiteout", "Zoetrope"
   };
 
   public static void main(String[] args) throws Exception {
