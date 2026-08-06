@@ -130,10 +130,22 @@ public class ParticleWave extends ParameterPattern {
     final int tq = (int) (this.timeMs / 50);
     final int tqs = (int) (this.timeMs / 400);
 
+    // slow corner rocking: the wave's ends at each face corner drift up and
+    // down at their own gentle pace, tilting the band across every face
+    final double segW = w / 4.0;
+    final double rockAmp = h * 0.12;
+    final double rt = this.timeMs * 2.2e-4 * (0.5 + speed);
+
     for (int x = 0; x < w; ++x) {
       final double u = (double) x / w;
+      final int seg = Math.min(3, (int) (x / segW));
+      final double su = x / segW - seg;
+      final double se = su * su * (3 - 2 * su); // ease between the two corners
+      final double c0 = Math.sin(rt + seg * 1.9);
+      final double c1 = Math.sin(rt + ((seg + 1) % 4) * 1.9);
+      final double rock = rockAmp * LXUtils.lerp(c0, c1, se);
       // three traveling sine octaves shape the swell
-      final double yc = h * (0.5 + drift) + amp * (
+      final double yc = h * (0.5 + drift) + rock + amp * (
           0.60 * Math.sin(TAU * (u * 2 - ph))
         + 0.25 * Math.sin(TAU * (u * 5 + ph * 1.7))
         + 0.15 * Math.sin(TAU * (u * 9 - ph * 2.3)));

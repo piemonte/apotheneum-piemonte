@@ -42,6 +42,7 @@ public class Pressure extends StrandPattern {
   private final boolean[] firing = new boolean[MAX_GROUPS];
   private int beatCount = 0;
   private int lastIdlePulse = -1;
+  private double rotPhase = 0; // slow orbit of the curtain wall around the gravity axis
   private boolean inited = false;
 
   public Pressure(LX lx) {
@@ -76,6 +77,14 @@ public class Pressure extends StrandPattern {
     }
 
     final double wow = getWow();
+    // the whole curtain wall slowly orbits the vertical axis; Wow spins it up,
+    // and each hit gives the drum a small extra shove
+    final double speedR = Math.max(0.05, getSpeed());
+    this.rotPhase += deltaMs * speedR * 2 * 0.00003 * (1 + wow * 2);
+    if (this.beat) {
+      this.rotPhase += 0.004 * this.beatLevel;
+    }
+    this.rotPhase -= Math.floor(this.rotPhase);
     if (this.beat) {
       ++this.beatCount;
       // green is home; a red minority coexists, re-rolled per pulse; rare all-red wall
@@ -130,10 +139,12 @@ public class Pressure extends StrandPattern {
     final int tq = (int) (this.timeMs / 80);
 
     for (int x = 0; x < w; ++x) {
-      final int g = Math.min(n - 1, x * n / w);
+      // panel coordinates rotate around the gravity axis
+      final double xr = (((double) x / w + this.rotPhase) % 1.0) * n;
+      final int g = Math.min(n - 1, (int) xr);
       final double e = this.energy[g];
       // dark wall gap between discrete curtain panels
-      final double gpos = ((double) x * n / w) - g;
+      final double gpos = xr - g;
       if (gpos < 0.10 || gpos > 0.90) continue;
       if (e > 0.01) {
         final double shim = 0.90 + 0.10 * hashd(x * 131 + tq * 7);

@@ -73,6 +73,8 @@ public class Digits extends StrandPattern {
     .setDescription("Digits drifting vertically with a slow-motion center stall");
 
   private final int[] bigChars = new int[MAX_BIG];
+  private final double[] enterT = new double[MAX_BIG]; // 0..1 slide-in progress
+  private final int[] enterDir = new int[MAX_BIG];     // 0 = appear, -1 top, +1 bottom
   private final int[] bgChars = new int[MAX_BG];
   private int glitchSeed = 1;
   private double retrigger = 0;
@@ -121,7 +123,7 @@ public class Digits extends StrandPattern {
   private final Surface cylinder = new Surface();
 
   public Digits(LX lx) {
-    // Base registers color (hue shift), speed (swap rate), size (unused weight).
+    // Base registers color (hue shift), speed (swap rate), size (digit scale).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("glitch", this.glitch);
     addParameter("sensitivity", this.sensitivity);
@@ -166,6 +168,15 @@ public class Digits extends StrandPattern {
       this.retrigger = 0;
       for (int i = 0; i < MAX_BIG; ++i) {
         this.bigChars[i] = (int) (Math.random() * 16);
+        // some digits just appear; others slide in from the top or bottom
+        final double r = Math.random();
+        if (r < 0.4) {
+          this.enterDir[i] = 0;
+          this.enterT[i] = 1;
+        } else {
+          this.enterDir[i] = (r < 0.7) ? -1 : 1;
+          this.enterT[i] = 0;
+        }
       }
       this.glitchSeed = (int) (Math.random() * 100000) + 1;
       this.flash = 1;
@@ -188,6 +199,11 @@ public class Digits extends StrandPattern {
     if (this.floodTimer >= 4200 + hashd((int) this.timeMs) * 1200) {
       this.floodTimer = 0;
       this.floodP = 1;
+    }
+    for (int i = 0; i < MAX_BIG; ++i) {
+      if (this.enterT[i] < 1) {
+        this.enterT[i] = Math.min(1, this.enterT[i] + deltaMs / 350.0);
+      }
     }
     this.flash *= Math.exp(-deltaMs / 150.0);
     this.floodP *= Math.exp(-deltaMs / 260.0);
@@ -236,7 +252,8 @@ public class Digits extends StrandPattern {
     }
 
     // --- foreground: giant white-hot characters, near-full height ---
-    final int scaleY = Math.max(2, (h - 6) / 6);
+    // Size drives the digit scale: small readout by default, giant at full
+    final int scaleY = Math.max(1, (int) Math.round(Math.pow(2, getSize() * 2.6)));
     final int scaleX = Math.max(1, scaleY / 3); // tall/narrow ~1:3
     final int bigW = 4 * scaleX + scaleX;       // char cell incl gap
     final int segW = isCube ? 50 : w;
@@ -256,13 +273,17 @@ public class Digits extends StrandPattern {
           ? ((hashd(this.glitchSeed + gi * 77) < 0.5) ? scaleX : -scaleX) : 0;
         final int dropCol = (hashd(this.glitchSeed + gi * 131) < gl * 0.5)
           ? (int) (hashd(this.glitchSeed + gi * 7) * 4) : -1;
+        // slide-in entrance: eased offset from off-canvas (0 for pop-ins)
+        final double et = this.enterT[gi];
+        final double ease = et * et * (3 - 2 * et);
+        final int yOff = (int) Math.round(this.enterDir[gi] * (1.0 - ease) * h * 0.85);
         for (int row = 0; row < 6; ++row) {
           final int bits = glyph[row];
           for (int b2 = 0; b2 < 4; ++b2) {
             if ((bits & (0b1000 >> b2)) == 0 || b2 == dropCol) continue;
             for (int sx = 0; sx < scaleX; ++sx) {
               for (int sy = 0; sy < scaleY; ++sy) {
-                addPix(o, cx + b2 * scaleX + sx + jit, y0 + row * scaleY + sy, white, bright);
+                addPix(o, cx + b2 * scaleX + sx + jit, y0 + row * scaleY + sy + yOff, white, bright);
               }
             }
           }

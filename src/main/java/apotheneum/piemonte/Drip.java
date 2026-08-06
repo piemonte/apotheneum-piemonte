@@ -84,7 +84,27 @@ public class Drip extends StrandPattern {
     final double speed = Math.max(0.05, getSpeed());
     this.sceneClock += deltaMs * speed * 2 * (1 + getWow() * 0.5);
     final double[] cur = SCENES[this.scene];
-    if (this.sceneClock >= cur[4]) {
+    final double sens = this.sensitivity.getValue();
+
+    // the music drives the style: solid hits advance the scene early, and a
+    // hard drop jumps the journey to a random scene — after a minimum dwell
+    // so the room never thrashes
+    boolean advanceScene = this.sceneClock >= cur[4];
+    if (this.beat && this.sceneClock > 1200) {
+      if (this.beatLevel > 0.80 - sens * 0.2) {
+        // drop: leap somewhere unexpected in the journey
+        this.sceneClock = 0;
+        int jump = this.scene;
+        while (jump == this.scene) {
+          jump = (int) (Math.random() * SCENES.length);
+        }
+        this.scene = jump;
+        return;
+      } else if (this.beatLevel > 0.45 - sens * 0.15) {
+        advanceScene = true; // solid hit: move the journey along now
+      }
+    }
+    if (advanceScene) {
       this.sceneClock = 0;
       this.scene = (this.scene + 1) % SCENES.length;
     }

@@ -7,7 +7,7 @@ exterior + interior surfaces, 28,512 nodes).
 
 ## Contents
 
-34 patterns under `apotheneum.piemonte`:
+33 patterns under `apotheneum.piemonte`:
 
 | Pattern | What it looks like |
 |---|---|
@@ -15,21 +15,20 @@ exterior + interior surfaces, 28,512 nodes).
 | **CandyFlip** | Rainbow comets with white-hot heads roam the walls, each bursting into a fresh generation of comets — a cascading firework of color until the energy runs out |
 | **ComeUp** | A glass of water filling: a turbulent, foamy waterline rises with sparkles and bubbles beneath, cycling to a new hue with every refill; cube, cylinder, or both |
 | **Cope** | Thick bars of light on the structure's vertical edges breathe with the music; bass drops erupt into radial shock rings that bloom across the surfaces |
-| **Crush** | Gradient beams with hot white heads descend and stack from the floor up, flashing on landing, until the whole piece fills into a cycling color gradient |
-| **Destination** | A blazing point at the center of each face throws flickering radial streaks with per-ray hues — a distant sun at the end of a long dark hall |
-| **Digits** | A giant terminal readout: huge white-hot characters over a dim churning field of blue log-glyphs, red/blue strand flares on every swap, and a rare hard red flood |
+| **Crush** | Segmented beams spiral down like a zoetrope drum and stack into a gradient; once full, new gradients pour down behind a churning surface line, then teardown slits empty the canvas and the build loops — with a strobe that fires only above the surface |
+| **Destination** | A blazing point at the center of each face throws flickering radial streaks with per-ray hues; a strobe button pulses cyan-white glitch shockrings outward from the star |
+| **Digits** | A terminal readout of white-hot characters (Size scales small ticker to giant wall) over a churning blue log-field — some digits pop in, others slide in from the edges or drift through with a slow-motion center stall |
 | **Downlink** | Emerald matrix-rain and red data-bars persist over a room flood that snaps green↔red through amber, above a warm console ring and glittering green floor puddles |
-| **Drip** | Standing beaded strands hang rim to floor, scintillating downward and curling into floor hooks; the room journeys through green, red, blue, gold, white, and blackout scenes |
-| **FeelSomething** | Colored sticks rain down, bounce and tumble end over end, throwing off bursts of white-hot sparks with every impact until they settle |
-| **Handprint** | Procedurally drawn handprints with fingerprint-ridge detail press onto the surfaces like hands on glass, hold, and lift away |
+| **Drip** | Standing beaded strands hang rim to floor, scintillating downward and curling into floor hooks; beats advance the scene journey and hard drops leap it to a random scene — green, red, blue, gold, white, blackout |
+| **FeelSomething** | Bold glowing rods rain down, bounce and tumble, spraying vivid white-hot sparks that cool to color as they arc |
 | **Liftoff** | Fuses climb every vertical string and burst in bright flashes, ember trails lingering; kicks detonate on the beat and drops launch a multi-rocket volley |
 | **Origami** | A sheet ruled with drifting diagonal lines folds on the beat (or the button): flaps sweep over with a white crease flash, each fold revealing a new color layer |
 | **Overclock** | A dense fixed strand curtain shimmers downward into a bright floor pool while a circuit maze re-routes at the hang line; the room breathes emerald↔azure through near-black |
 | **Overflow** | A segmented band of red/green equalizer blocks hangs mid-wall, reconfiguring like letterforms, pulsing with the beat, pooling on the floor, and flooding the room green on drops |
-| **ParticleWave** | A rolling swell of shimmering glitter sweeps around the structure through a dark starfield, foam sparkling along its crest; storms bring blue sparkle bursts |
+| **ParticleWave** | A rolling swell of shimmering glitter sweeps around the structure through a dark starfield, its ends rocking slowly up and down at each corner; storms bring blue sparkle bursts |
 | **PlayaStrobe** | A storm-torn glint band rakes continuously around the room over a faint churning floor; the operator's Strobe button fires pulsating white bursts that decay away |
-| **Pressure** | Discrete curtain panels gate hard on/off to the music — a green wall speckled with coexisting red, breathing dark-bright-dark over a warm floor ember that never goes out |
-| **Radiate** | Cylinder only: dotted rays fan up the walls around you with red rings hugging the base; beats bloom brightness from the center outward, quiet collapses into a twinkling starfield |
+| **Pressure** | Discrete curtain panels gate hard on/off to the music while the whole wall slowly orbits the vertical axis — green speckled with red over a warm floor ember that never goes out |
+| **Radiate** | Dotted rays fan up the walls around you with red rings hugging the base (cylinder by default, cube optional); beats bloom brightness from the center outward, quiet collapses into a twinkling starfield |
 | **Rain** | A heavy downpour of vertical streaks; each drop splashes on the floor line and the water arcs back up before falling again |
 | **ReUp** | Every string lit solid; bass hits knock random groups dark and they fade back up — an audio curtain that keeps rebuilding itself |
 | **Replies** | Glowing dots glide the interior rings and columns; when two collide they burst, and the matching exterior surface flickers in reply — the outer chamber answering the inner |
@@ -122,6 +121,46 @@ javac -cp "$CP" tools/TestAll.java -d /tmp/testall && java -cp "$CP:/tmp/testall
 After pulling upstream Apotheneum changes, reinstall it (`mvn install` in that repo)
 and rebuild this package against the fresh artifact — the runtime link across jars
 means base-API changes surface here at load time, not compile time.
+
+## Manual Setup Walkthrough
+
+Step-by-step from a fresh machine, no tooling assumed beyond a terminal:
+
+1. **Install Java 21+** — `brew install openjdk@21` (macOS) or your platform's OpenJDK
+   package. Verify with `java -version`.
+2. **Install Maven** — `brew install maven`. Verify with `mvn -version`.
+3. **Install Chromatik** — download from [chromatik.co](https://chromatik.co), run it
+   once so it creates `~/Chromatik/` (Fixtures, Packages, Projects folders), then quit.
+4. **Install the Apotheneum fixtures** — clone the core repo and copy its fixture files:
+   ```sh
+   git clone https://github.com/Apotheneum/Apotheneum.git
+   cp -r Apotheneum/src/main/resources/fixtures/Apotheneum ~/Chromatik/Fixtures/
+   ```
+5. **Build + install the core package** (also needed to compile this one):
+   ```sh
+   cd Apotheneum && mvn -Pinstall install && cd ..
+   ```
+6. **Build + install this package**:
+   ```sh
+   git clone https://github.com/piemonte/apotheneum-piemonte.git
+   cd apotheneum-piemonte && mvn -Pinstall install
+   ```
+7. **Copy the VJ project** where Chromatik can open it:
+   ```sh
+   cp src/main/resources/projects/Apotheneum-VJ.lxp ~/Chromatik/Projects/
+   ```
+8. **Launch Chromatik** and open `Apotheneum-VJ.lxp` (File > Open Project). You should
+   see the Apotheneum model (28,512 points) with channels EXT-A/INT-A (live),
+   EXT-B/C + INT-B/C (faders at 0), and utility channels.
+9. **Verify patterns loaded** — the browser lists them under **Apotheneum/piemonte**;
+   check `~/Chromatik/Logs` for errors if any are missing.
+10. **Enable audio** (optional) — AUDIO section in the left pane; the default input is
+    the system microphone. For direct routing install a loopback device
+    (`brew install blackhole-2ch`), set a Multi-Output Device as system output, and
+    pick BlackHole as Chromatik's audio input.
+11. **Blend** — bring up any B/C deck fader over the A deck; channel blend is additive.
+    Palette section (top left) holds 22 swatches; click one to crossfade the global
+    color story.
 
 ## Resources
 

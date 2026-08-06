@@ -23,7 +23,7 @@ public class TestAll {
     "Downlink",
     "Drip",
     "FeelSomething",
-    "Handprint",
+    
     "Liftoff",
     "Origami",
     "Overclock",

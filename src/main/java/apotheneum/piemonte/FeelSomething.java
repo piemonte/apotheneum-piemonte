@@ -185,11 +185,11 @@ public class FeelSomething extends ParameterPattern {
       // sparkles fly out of the stick's two ends
       if (justBounced) {
         int n = LXUtils.constrain(
-          (int) (impact * 700 * (0.3 + sparkAmt) * (1.0 + wow * 4.0)), 1, (int) (22 + wow * 60));
+          (int) (impact * 1000 * (0.35 + sparkAmt) * (1.0 + wow * 4.0)), 2, (int) (32 + wow * 70));
         s.sparkFrom(ax, ay, -dirx, -diry, n);
         s.sparkFrom(bx, by, dirx, diry, n);
       } else if (s.kbounced[i]) {
-        double rate = 0.12 + sparkAmt * 0.8 + wow * 0.6; // keep shedding off the ends while tumbling
+        double rate = 0.20 + sparkAmt * 1.0 + wow * 0.6; // keep shedding off the ends while tumbling
         int shed = 1 + (int) (wow * 3);
         if (Math.random() < rate) s.sparkFrom(ax, ay, -dirx, -diry, shed);
         if (Math.random() < rate) s.sparkFrom(bx, by, dirx, diry, shed);
@@ -203,7 +203,10 @@ public class FeelSomething extends ParameterPattern {
       for (int k = 0; k <= steps; ++k) {
         double f = (steps == 0) ? 0 : (double) k / steps;
         int col2 = (f < 0.15 || f > 0.85) ? hot : col;
-        splat(o, w, h, ax + (bx - ax) * f, ay + (by - ay) * f, 0.8, 1.0, col2);
+        final double px = ax + (bx - ax) * f;
+        final double py = ay + (by - ay) * f;
+        splat(o, w, h, px, py, 2.3, 0.35, col);   // soft aura around the rod
+        splat(o, w, h, px, py, 1.4, 1.0, col2);   // bold core
       }
     }
 
@@ -220,7 +223,7 @@ public class FeelSomething extends ParameterPattern {
       double fade = s.splife[i] / s.spmax[i];
       double twinkle = 0.55 + 0.45 * Math.random(); // shimmer
       int sc = LXColor.lerp(ember, LXColor.WHITE, (float) fade);
-      splat(o, w, h, s.spx[i], s.spy[i], 0.7, Math.pow(fade, 2) * twinkle, sc);
+      splat(o, w, h, s.spx[i], s.spy[i], 1.05, Math.pow(fade, 1.5) * (0.55 + 0.65 * twinkle), sc);
     }
   }
 

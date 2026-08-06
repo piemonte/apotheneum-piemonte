@@ -4195,10 +4195,6 @@
                 "class": "apotheneum.piemonte.FeelSomething"
               },
               {
-                "id": 9842368,
-                "class": "apotheneum.piemonte.Handprint"
-              },
-              {
                 "id": 9842370,
                 "class": "apotheneum.piemonte.Digits"
               },
@@ -4368,96 +4364,7 @@
                 "triggers": []
               }
             },
-            "effects": [
-              {
-                "id": 9842428,
-                "class": "heronarts.lx.effect.FreezeEffect",
-                "internal": {
-                  "modulationColor": 0,
-                  "modulationControlsExpanded": true,
-                  "modulationsExpanded": true,
-                  "expanded": true,
-                  "expandedCue": true,
-                  "expandedAux": true,
-                  "modulationExpanded": false
-                },
-                "parameters": {
-                  "label": "Freeze",
-                  "midiFilter/enabled": true,
-                  "midiFilter/channel": 16,
-                  "midiFilter/channel/name": "OMNI",
-                  "midiFilter/minNote": 0,
-                  "midiFilter/noteRange": 128,
-                  "midiFilter/minVelocity": 1,
-                  "midiFilter/velocityRange": 127,
-                  "view": 0,
-                  "viewPriority": 0,
-                  "enabled": true,
-                  "locked": false,
-                  "lock": false,
-                  "hold": false,
-                  "resample": false,
-                  "mix": 0.6085156250046566,
-                  "attackMs": 0.0,
-                  "releaseMs": 50.0,
-                  "mode": 0,
-                  "mode/name": "REPLACE"
-                },
-                "children": {
-                  "modulation": {
-                    "id": 9842429,
-                    "class": "heronarts.lx.modulation.LXModulationEngine",
-                    "internal": {
-                      "modulationColor": 0,
-                      "modulationControlsExpanded": true,
-                      "modulationsExpanded": true
-                    },
-                    "parameters": {
-                      "label": "Modulation"
-                    },
-                    "children": {},
-                    "modulators": [],
-                    "modulations": [],
-                    "triggers": []
-                  },
-                  "interval": {
-                    "id": 9842430,
-                    "class": "heronarts.lx.modulator.Interval",
-                    "internal": {
-                      "modulationColor": 0,
-                      "modulationControlsExpanded": true,
-                      "modulationsExpanded": true
-                    },
-                    "parameters": {
-                      "label": "Interval",
-                      "running": false,
-                      "trigger": false,
-                      "reset": false,
-                      "midiSource/index": 0,
-                      "midiFilter/enabled": true,
-                      "midiFilter/channel": 16,
-                      "midiFilter/channel/name": "OMNI",
-                      "midiFilter/minNote": 0,
-                      "midiFilter/noteRange": 128,
-                      "midiFilter/minVelocity": 1,
-                      "midiFilter/velocityRange": 127,
-                      "loop": true,
-                      "tempoSync": false,
-                      "tempoMultiplier": 4,
-                      "tempoMultiplier/name": "QUARTER",
-                      "tempoLock": true,
-                      "periodMs": 1000.0,
-                      "randomMs": 0.0,
-                      "chance": 100.0,
-                      "triggerOut": false
-                    },
-                    "children": {},
-                    "basis": 0.0
-                  }
-                },
-                "deviceVersion": -1
-              }
-            ],
+            "effects": [],
             "clips": [],
             "patternIndex": 0,
             "patterns": [
@@ -4492,10 +4399,6 @@
               {
                 "id": 9842438,
                 "class": "apotheneum.piemonte.FeelSomething"
-              },
-              {
-                "id": 9842439,
-                "class": "apotheneum.piemonte.Handprint"
               },
               {
                 "id": 9842441,
@@ -4645,7 +4548,7 @@
               "transitionEnabled": true,
               "transitionTimeSecs": 5.0,
               "transitionBlendMode": 0,
-              "focusedPattern": 16,
+              "focusedPattern": 15,
               "triggerPatternCycle": false,
               "launchPatternCycle": false
             },
@@ -4669,7 +4572,7 @@
             },
             "effects": [],
             "clips": [],
-            "patternIndex": 16,
+            "patternIndex": 15,
             "patterns": [
               {
                 "id": 9842499,
@@ -4702,10 +4605,6 @@
               {
                 "id": 9842506,
                 "class": "apotheneum.piemonte.FeelSomething"
-              },
-              {
-                "id": 9842507,
-                "class": "apotheneum.piemonte.Handprint"
               },
               {
                 "id": 9842509,
@@ -4855,7 +4754,7 @@
               "transitionEnabled": true,
               "transitionTimeSecs": 5.0,
               "transitionBlendMode": 0,
-              "focusedPattern": 16,
+              "focusedPattern": 15,
               "triggerPatternCycle": false,
               "launchPatternCycle": false
             },
@@ -4877,98 +4776,9 @@
                 "triggers": []
               }
             },
-            "effects": [
-              {
-                "id": 9842567,
-                "class": "heronarts.lx.effect.FreezeEffect",
-                "internal": {
-                  "modulationColor": 0,
-                  "modulationControlsExpanded": true,
-                  "modulationsExpanded": true,
-                  "expanded": true,
-                  "expandedCue": true,
-                  "expandedAux": true,
-                  "modulationExpanded": false
-                },
-                "parameters": {
-                  "label": "Freeze",
-                  "midiFilter/enabled": true,
-                  "midiFilter/channel": 16,
-                  "midiFilter/channel/name": "OMNI",
-                  "midiFilter/minNote": 0,
-                  "midiFilter/noteRange": 128,
-                  "midiFilter/minVelocity": 1,
-                  "midiFilter/velocityRange": 127,
-                  "view": 0,
-                  "viewPriority": 0,
-                  "enabled": true,
-                  "locked": false,
-                  "lock": false,
-                  "hold": false,
-                  "resample": false,
-                  "mix": 0.6085156250046566,
-                  "attackMs": 0.0,
-                  "releaseMs": 50.0,
-                  "mode": 0,
-                  "mode/name": "REPLACE"
-                },
-                "children": {
-                  "modulation": {
-                    "id": 9842568,
-                    "class": "heronarts.lx.modulation.LXModulationEngine",
-                    "internal": {
-                      "modulationColor": 0,
-                      "modulationControlsExpanded": true,
-                      "modulationsExpanded": true
-                    },
-                    "parameters": {
-                      "label": "Modulation"
-                    },
-                    "children": {},
-                    "modulators": [],
-                    "modulations": [],
-                    "triggers": []
-                  },
-                  "interval": {
-                    "id": 9842569,
-                    "class": "heronarts.lx.modulator.Interval",
-                    "internal": {
-                      "modulationColor": 0,
-                      "modulationControlsExpanded": true,
-                      "modulationsExpanded": true
-                    },
-                    "parameters": {
-                      "label": "Interval",
-                      "running": false,
-                      "trigger": false,
-                      "reset": false,
-                      "midiSource/index": 0,
-                      "midiFilter/enabled": true,
-                      "midiFilter/channel": 16,
-                      "midiFilter/channel/name": "OMNI",
-                      "midiFilter/minNote": 0,
-                      "midiFilter/noteRange": 128,
-                      "midiFilter/minVelocity": 1,
-                      "midiFilter/velocityRange": 127,
-                      "loop": true,
-                      "tempoSync": false,
-                      "tempoMultiplier": 4,
-                      "tempoMultiplier/name": "QUARTER",
-                      "tempoLock": true,
-                      "periodMs": 1000.0,
-                      "randomMs": 0.0,
-                      "chance": 100.0,
-                      "triggerOut": false
-                    },
-                    "children": {},
-                    "basis": 0.0
-                  }
-                },
-                "deviceVersion": -1
-              }
-            ],
+            "effects": [],
             "clips": [],
-            "patternIndex": 16,
+            "patternIndex": 15,
             "patterns": [
               {
                 "id": 9842570,
@@ -5001,10 +4811,6 @@
               {
                 "id": 9842577,
                 "class": "apotheneum.piemonte.FeelSomething"
-              },
-              {
-                "id": 9842578,
-                "class": "apotheneum.piemonte.Handprint"
               },
               {
                 "id": 9842580,
@@ -5213,10 +5019,6 @@
                 "class": "apotheneum.piemonte.FeelSomething"
               },
               {
-                "id": 9844729,
-                "class": "apotheneum.piemonte.Handprint"
-              },
-              {
                 "id": 9844730,
                 "class": "apotheneum.piemonte.Digits"
               },
@@ -5386,96 +5188,7 @@
                 "triggers": []
               }
             },
-            "effects": [
-              {
-                "id": 9844757,
-                "class": "heronarts.lx.effect.FreezeEffect",
-                "internal": {
-                  "modulationColor": 0,
-                  "modulationControlsExpanded": true,
-                  "modulationsExpanded": true,
-                  "expanded": true,
-                  "expandedCue": true,
-                  "expandedAux": true,
-                  "modulationExpanded": false
-                },
-                "parameters": {
-                  "label": "Freeze",
-                  "midiFilter/enabled": true,
-                  "midiFilter/channel": 16,
-                  "midiFilter/channel/name": "OMNI",
-                  "midiFilter/minNote": 0,
-                  "midiFilter/noteRange": 128,
-                  "midiFilter/minVelocity": 1,
-                  "midiFilter/velocityRange": 127,
-                  "view": 0,
-                  "viewPriority": 0,
-                  "enabled": true,
-                  "locked": false,
-                  "lock": false,
-                  "hold": false,
-                  "resample": false,
-                  "mix": 0.6085156250046566,
-                  "attackMs": 0.0,
-                  "releaseMs": 50.0,
-                  "mode": 0,
-                  "mode/name": "REPLACE"
-                },
-                "children": {
-                  "modulation": {
-                    "id": 9844758,
-                    "class": "heronarts.lx.modulation.LXModulationEngine",
-                    "internal": {
-                      "modulationColor": 0,
-                      "modulationControlsExpanded": true,
-                      "modulationsExpanded": true
-                    },
-                    "parameters": {
-                      "label": "Modulation"
-                    },
-                    "children": {},
-                    "modulators": [],
-                    "modulations": [],
-                    "triggers": []
-                  },
-                  "interval": {
-                    "id": 9844759,
-                    "class": "heronarts.lx.modulator.Interval",
-                    "internal": {
-                      "modulationColor": 0,
-                      "modulationControlsExpanded": true,
-                      "modulationsExpanded": true
-                    },
-                    "parameters": {
-                      "label": "Interval",
-                      "running": false,
-                      "trigger": false,
-                      "reset": false,
-                      "midiSource/index": 0,
-                      "midiFilter/enabled": true,
-                      "midiFilter/channel": 16,
-                      "midiFilter/channel/name": "OMNI",
-                      "midiFilter/minNote": 0,
-                      "midiFilter/noteRange": 128,
-                      "midiFilter/minVelocity": 1,
-                      "midiFilter/velocityRange": 127,
-                      "loop": true,
-                      "tempoSync": false,
-                      "tempoMultiplier": 4,
-                      "tempoMultiplier/name": "QUARTER",
-                      "tempoLock": true,
-                      "periodMs": 1000.0,
-                      "randomMs": 0.0,
-                      "chance": 100.0,
-                      "triggerOut": false
-                    },
-                    "children": {},
-                    "basis": 0.0
-                  }
-                },
-                "deviceVersion": -1
-              }
-            ],
+            "effects": [],
             "clips": [],
             "patternIndex": 0,
             "patterns": [
@@ -5510,10 +5223,6 @@
               {
                 "id": 9844767,
                 "class": "apotheneum.piemonte.FeelSomething"
-              },
-              {
-                "id": 9844768,
-                "class": "apotheneum.piemonte.Handprint"
               },
               {
                 "id": 9844769,
