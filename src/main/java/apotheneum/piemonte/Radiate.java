@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Radiate — cylinder only. You stand where the performer sat, on a floor of
+ * Radiate — you stand where the performer sat, on a floor of
  * LED dots: dotted rays fan outward all around you — up the walls, since out
  * on the floor is up on the cylinder — their dot-chains crawling slowly
  * outward, faster on the bass. Dotted rings hug the center below them, red
@@ -26,10 +26,17 @@ import heronarts.lx.LXCategory;
 import heronarts.lx.color.LXColor;
 import heronarts.lx.parameter.CompoundParameter;
 import heronarts.lx.parameter.DiscreteParameter;
+import heronarts.lx.parameter.EnumParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
 public class Radiate extends ParameterPattern {
+
+  public enum Target {
+    BOTH,
+    CUBE,
+    CYLINDER
+  }
 
   private static final int MAX_RAYS = 90;
   private static final double SCENE_MS = 6700;   // per palette scene (~40s arc / 6)
@@ -47,6 +54,10 @@ public class Radiate extends ParameterPattern {
   public final CompoundParameter sensitivity =
     new CompoundParameter("Sens", 0.5, 0, 1)
     .setDescription("How easily the music blooms and fills the room");
+
+  public final EnumParameter<Target> target =
+    new EnumParameter<Target>("Target", Target.CYLINDER)
+    .setDescription("Which structures to render to");
 
   // per-ray state
   private final double[] rx = new double[MAX_RAYS];   // column position (fixed)
@@ -70,6 +81,7 @@ public class Radiate extends ParameterPattern {
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("rays", this.rays);
     addParameter("sensitivity", this.sensitivity);
+    addParameter("target", this.target);
   }
 
   private static double hashd(int n) {
@@ -79,9 +91,9 @@ public class Radiate extends ParameterPattern {
     return (h & 0x7fffffff) / (double) 0x7fffffff;
   }
 
-  private void initRays(int w) {
+  private void initRays() {
     for (int i = 0; i < MAX_RAYS; ++i) {
-      this.rx[i] = hashd(i * 7 + 1) * w;
+      this.rx[i] = hashd(i * 7 + 1); // normalized 0..1 around any surface
       this.rlen[i] = 0.85 + 0.15 * hashd(i * 31 + 11);
     }
     this.inited = true;
@@ -128,11 +140,8 @@ public class Radiate extends ParameterPattern {
     setColors(LXColor.BLACK);
     this.timeMs += deltaMs;
 
-    final Apotheneum.Orientation o = Apotheneum.cylinder.exterior;
-    final int w = o.width();
-    final int h = o.height();
     if (!this.inited) {
-      initRays(w);
+      initRays();
     }
 
     final double speed = Math.max(0.02, getSpeed());
@@ -160,6 +169,23 @@ public class Radiate extends ParameterPattern {
       ? 1 - Math.exp(-deltaMs / 120.0)
       : 1 - Math.exp(-deltaMs / 2000.0);
     this.floodEnv += (floodTarget - this.floodEnv) * fa;
+
+    final Target t = this.target.getEnum();
+    if (t != Target.CUBE) {
+      renderField(Apotheneum.cylinder.exterior, deltaMs);
+      copyCylinderExterior();
+    }
+    if (t != Target.CYLINDER) {
+      renderField(Apotheneum.cube.exterior, deltaMs);
+      copyCubeExterior();
+    }
+  }
+
+  private void renderField(Apotheneum.Orientation o, double deltaMs) {
+    final int w = o.width();
+    final int h = o.height();
+    final double speed = Math.max(0.02, getSpeed());
+    final double wow = getWow();
 
     // palette scenes stepping through the reference arc
     final double hueShift = LXColor.h(getColor());
@@ -196,11 +222,11 @@ public class Radiate extends ParameterPattern {
         final double len = h * LXUtils.clamp(
           0.30 + 0.65 * this.floodEnv + 0.10 * LXUtils.clamp(this.binMag[i] * 2, 0, 1), 0, 1)
           * this.rlen[i];
-        final int x = (int) Math.round(this.rx[i]);
+        final int x = (int) Math.round(this.rx[i] * w);
         // DUO scene: red/blue opposition split by a slowly rotating boundary
         int rayCol = col, rayHot = hot;
         if (duoNow) {
-          final boolean redSide = ((this.rx[i] / w + this.timeMs * 0.00006) % 1.0) < 0.5;
+          final boolean redSide = ((this.rx[i] + this.timeMs * 0.00006) % 1.0) < 0.5;
           rayCol = redSide ? duoRed : duoBlue;
           rayHot = LXColor.lerp(rayCol, LXColor.WHITE, 0.6f);
         }
@@ -276,7 +302,6 @@ public class Radiate extends ParameterPattern {
       }
     }
 
-    copyCylinderExterior();
   }
 
   private static double wrapDeg(double d) {

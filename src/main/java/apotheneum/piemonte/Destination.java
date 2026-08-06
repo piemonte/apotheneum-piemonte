@@ -19,6 +19,7 @@ import apotheneum.Apotheneum;
 import heronarts.lx.LX;
 import heronarts.lx.LXCategory;
 import heronarts.lx.color.LXColor;
+import heronarts.lx.parameter.BooleanParameter;
 import heronarts.lx.parameter.CompoundParameter;
 import heronarts.lx.parameter.DiscreteParameter;
 import heronarts.lx.parameter.EnumParameter;
@@ -35,6 +36,10 @@ public class Destination extends ParameterPattern {
 
   private static final double TAU = Math.PI * 2;
   private static final int MAX_RAYS = 16;
+  private static final int CYAN = LXColor.rgb(0, 255, 255);
+  private static final int STROBE_COLOR = LXColor.lerp(LXColor.WHITE, CYAN, 0.30f);
+  private static final double RING_GAP = 9.0;     // cells between glitch rings
+  private static final double PULSE_SPEED = 0.045; // ring expansion, cells/ms
   private static final double SPIN = 0.0002; // ray rotation, rad / ms at speed 1
 
   public final DiscreteParameter rays =
@@ -60,6 +65,14 @@ public class Destination extends ParameterPattern {
 
   private double baseAngle = 0;
   private double timeMs = 0;
+  public final BooleanParameter strobe =
+    new BooleanParameter("Strobe", false)
+    .setMode(BooleanParameter.Mode.MOMENTARY)
+    .setDescription("Glitch glow pulses out from the star while held");
+
+  private double strobeEnv = 0;
+  private double pulseClock = 0;
+
   private final double[] rayFlick = new double[MAX_RAYS];
   private final int[] rayColor = new int[MAX_RAYS];
 
@@ -68,6 +81,7 @@ public class Destination extends ParameterPattern {
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("rays", this.rays);
     addParameter("flicker", this.flicker);
+    addParameter("strobe", this.strobe);
     addParameter("target", this.target);
   }
 
@@ -151,6 +165,18 @@ public class Destination extends ParameterPattern {
       this.rayColor[n] = LXColor.hsb((float) ((baseHue + n * (30.0 + 60.0 * wow)) % 360), 85, 100);
     }
 
+    // SpecialKube-style glitch strobe: cyan-white shockrings pulse outward
+    // from the star while the button is held, strobing and jittering
+    if (this.strobe.isOn()) {
+      this.strobeEnv = 1;
+      this.pulseClock += deltaMs;
+    } else if (this.strobeEnv > 0) {
+      this.strobeEnv = Math.max(0, this.strobeEnv - deltaMs / 600.0);
+      this.pulseClock += deltaMs;
+    }
+    final boolean strobeGate = (this.timeMs % 125.0) < 78; // ~8Hz glitch flicker
+    final double glitchJit = (this.strobeEnv > 0) ? (Math.random() - 0.5) * 2.5 : 0;
+
     final double coreK = 0.10 + size * 0.22;   // brighter/larger core with Size
     final double exposure = 0.05 + size * 0.05; // ray angular half-width
     final double rayFade = 0.55;                // rays fade toward the edge
@@ -193,15 +219,32 @@ public class Destination extends ParameterPattern {
           double band = LXUtils.clamp(1.0 - Math.abs(dyp) / bandW, 0, 1)
             * Math.max(0, 1.0 - dist * 0.6);
 
+          // glitch shockrings: concentric cyan-white pulses expanding from the
+          // star, strobing hard and jittering like SpecialKube's special cubes
+          double glitch = 0;
+          if (this.strobeEnv > 0.01 && strobeGate) {
+            final double distC = dist * halfDiag + glitchJit;
+            double dRing = (distC - this.pulseClock * PULSE_SPEED) % RING_GAP;
+            if (dRing < 0) dRing += RING_GAP;
+            dRing = Math.min(dRing, RING_GAP - dRing);
+            final double ring = Math.exp(-dRing * dRing / 2.2);
+            glitch = this.strobeEnv * ring * Math.max(0.25, 1.4 - dist * 1.1);
+          }
+
           double b = (core + rayB * 0.8 + band * 0.7) * gFlicker;
           b *= smoothstep(1.05, 0.45, dist); // vignette toward the panel edges
-          if (b <= 0.01) continue;
+          if (b <= 0.01 && glitch <= 0.01) continue;
           b = LXUtils.clamp(b, 0, 1);
 
           // tint toward the winning ray, then whiten the hot core
           int cbase = LXColor.lerp(base, rayC, (float) LXUtils.clamp(rayMax * 1.5, 0, 1));
           int c = LXColor.lerp(cbase, LXColor.WHITE, (float) LXUtils.clamp(core * 1.2, 0, 1));
-          this.colors[p.idx[x][y]] = LXColor.scaleBrightness(c, (float) b);
+          int outC = LXColor.scaleBrightness(c, (float) b);
+          if (glitch > 0.01) {
+            outC = LXColor.lightest(outC,
+              LXColor.scaleBrightness(STROBE_COLOR, (float) LXUtils.clamp(glitch, 0, 1)));
+          }
+          this.colors[p.idx[x][y]] = outC;
         }
       }
     }

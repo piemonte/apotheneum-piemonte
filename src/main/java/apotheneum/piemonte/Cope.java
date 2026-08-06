@@ -110,6 +110,7 @@ public class Cope extends ParameterPattern {
   private double bassAvg, prevBass, sinceBeatMs, beatLevel;
   private double levelEnv = 0;
   private double levelAvg = 0; // slow auto-gain reference
+  private double beatKick = 0; // bars snap wide on each hit
 
   public Cope(LX lx) {
     // Base registers color (edge/glow tint), speed (glow expand/decay), size (base
@@ -157,10 +158,17 @@ public class Cope extends ParameterPattern {
     double aAtk = 1 - Math.exp(-deltaMs / 25.0);
     double aRel = 1 - Math.exp(-deltaMs / 220.0);
     this.levelEnv += (level - this.levelEnv) * (level > this.levelEnv ? aAtk : aRel);
-    // auto-gain: normalize against a slow running average so mic or line input
-    // both produce full-range breathing
+    // auto-gain drive: the envelope/average RATIO carries the dynamics (steady
+    // music sits ~0.9-1.0; hits spike it, gaps drop it). Expand the contrast
+    // around that resting point and snap on beats so the bars actually pump.
     this.levelAvg += (level - this.levelAvg) * (1 - Math.exp(-deltaMs / 2500.0));
-    final double norm = LXUtils.clamp(this.levelEnv / Math.max(1e-4, this.levelAvg * 1.15), 0, 2);
+    final double ratio = this.levelEnv / Math.max(1e-4, this.levelAvg);
+    if (beat) {
+      this.beatKick = 1;
+    }
+    this.beatKick *= Math.exp(-deltaMs / 250.0);
+    final double norm = LXUtils.clamp((ratio - 0.55) * 1.6, 0, 1.2)
+      + this.beatKick * 0.6;
     final Target t = this.target.getEnum();
     final int nLines = this.lines.getValuei();
 
@@ -186,8 +194,8 @@ public class Cope extends ParameterPattern {
     final double baseR = 0.5 + getSize() * 4.0 + wow * 2.0;
     final double thickMax = isCube ? w * 0.25 : 0.45 * (double) w / Math.max(1, nLines);
     final double thick = LXUtils.clamp(
-      baseR + this.reactivity.getValue() * level * (thickMax - baseR) * 0.6, 0.5, thickMax);
-    final double barBright = 0.65 + 0.35 * LXUtils.clamp(level, 0, 1);
+      baseR + this.reactivity.getValue() * level * (thickMax - baseR) * 0.85, 0.5, thickMax);
+    final double barBright = 0.50 + 0.50 * LXUtils.clamp(level * 0.8, 0, 1);
     for (int ex : s.edgeX) {
       for (int y = 0; y < h; ++y) {
         vbar(o, w, h, ex, y, thick, barBright, base);
