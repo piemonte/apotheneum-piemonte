@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Trip — thick concentric diamond bands spiral out from the center in a shifting
+ * Diabolical — thick concentric diamond bands spiral out from the center in a shifting
  * rainbow, rotating and radiating endlessly, each band whitening to a bright
  * ridge along its spine. Wow ripples the whole field like a flag in the wind.
  * A graphics-forward, hypnotic field inspired by the LXStudio-TE SpiralDiamonds
@@ -23,7 +23,7 @@ import heronarts.lx.parameter.DiscreteParameter;
 import heronarts.lx.parameter.EnumParameter;
 
 @LXCategory("Apotheneum/piemonte")
-public class Trip extends ParameterPattern {
+public class Diabolical extends ParameterPattern {
 
   public enum Target {
     BOTH,
@@ -60,7 +60,7 @@ public class Trip extends ParameterPattern {
   private double scroll = 0;  // outward radial scroll
   private double timeMs = 0;
 
-  public Trip(LX lx) {
+  public Diabolical(LX lx) {
     // Base registers color (base hue), speed (outward scroll), size (zoom).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("quantity", this.quantity);

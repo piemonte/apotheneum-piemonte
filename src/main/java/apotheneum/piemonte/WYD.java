@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Vibe — a field of fine flowing waveform lines that ripple and drift like silk
+ * WYD — a field of fine flowing waveform lines that ripple and drift like silk
  * or wind-blown hair. The streamlines are warped by multi-octave noise and lit by
  * a slow second noise field so crests glow bright while the hollows fall into
  * complementary-tinted shadow, giving the waves real depth. The whole field
@@ -26,7 +26,7 @@ import heronarts.lx.utils.LXUtils;
 import heronarts.lx.utils.Noise;
 
 @LXCategory("Apotheneum/piemonte")
-public class Vibe extends ParameterPattern {
+public class WYD extends ParameterPattern {
 
   public enum Target {
     BOTH,
@@ -53,7 +53,7 @@ public class Vibe extends ParameterPattern {
 
   private double timeMs = 0;
 
-  public Vibe(LX lx) {
+  public WYD(LX lx) {
     // Base registers color (wave tint), speed (flow drift), size (line thickness).
     super(lx, 0.4, 0, 1, 0.5, 0, 1);
     addParameter("density", this.density);

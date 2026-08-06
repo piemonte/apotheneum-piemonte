@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Zoetrope — red vertical bars orbiting the fixture. A handful of dotted
+ * Ghosted — red vertical bars orbiting the fixture. A handful of dotted
  * partial-height bars, each with a hot amber core fading to deep red at the
  * ends, spin smoothly around the cylinder and cube like slits in a zoetrope
  * drum. Brightness pulses with the beat; Speed is bipolar, so the drum spins
@@ -25,7 +25,7 @@ import heronarts.lx.parameter.DiscreteParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class Zoetrope extends StrandPattern {
+public class Ghosted extends StrandPattern {
 
   private static final int MAX_BARS = 12;
   private static final double REV_PER_SEC = 0.35; // at |Speed| = 1 (measured ~0.3-0.5)
@@ -42,7 +42,7 @@ public class Zoetrope extends StrandPattern {
   private double stepKick = 0;   // Wow: azimuth jump impulse on hits
   private double pulse = 0;
 
-  public Zoetrope(LX lx) {
+  public Ghosted(LX lx) {
     // Base registers color (bar tint), bipolar speed (spin rate + direction),
     // size (bar height), wow (stepped glitch spin).
     super(lx, 0.35, -1, 1, 0.5, 0, 1);

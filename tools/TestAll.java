@@ -16,14 +16,17 @@ public class TestAll {
     "Afterglow",
     "CandyFlip",
     "ComeUp",
+    "Cooked",
     "Cope",
     "Crush",
     "Destination",
+    "Diabolical",
     "Digits",
     "Downlink",
     "Drip",
     "FeelSomething",
-    
+    "Ghosted",
+    "Likes",
     "Liftoff",
     "Origami",
     "Overclock",
@@ -38,15 +41,11 @@ public class TestAll {
     "SpaceBoundSpecies",
     "SpecialKube",
     "Superbloom",
-    "Synapse",
     "TheHumanRace",
-    "Trains",
-    "Trip",
     "TunnelVision",
     "UFOAbduction",
-    "Vibe",
     "Whiteout",
-    "Zoetrope"
+    "WYD"
   };
 
   public static void main(String[] args) throws Exception {

@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Trains — thick horizontal line segments march down the surfaces in a steady
+ * Cooked — thick horizontal line segments march down the surfaces in a steady
  * rhythm. Each side of the geometry is split into four even quarter-lanes, one
  * segment per lane, so a broken horizontal line descends from top to bottom in
  * unison; when it exits the floor a fresh row re-enters at the top. Turn WOW up
@@ -24,7 +24,7 @@ import heronarts.lx.parameter.EnumParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class Trains extends ParameterPattern {
+public class Cooked extends ParameterPattern {
 
   public enum Target {
     BOTH,
@@ -58,7 +58,7 @@ public class Trains extends ParameterPattern {
   private double phase = 0;
   private double timeMs = 0;
 
-  public Trains(LX lx) {
+  public Cooked(LX lx) {
     // Base registers color, speed (descent rhythm), size (bar thickness), wow (glitch).
     super(lx, 0.4, 0, 1, 0.4, 0, 1);
     addParameter("segments", this.segments);

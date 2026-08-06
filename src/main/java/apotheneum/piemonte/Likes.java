@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Synapse — green circuitry firing across the strands. On every hit, a handful
+ * Likes — green circuitry firing across the strands. On every hit, a handful
  * of circuit traces ignite at random spots around the surfaces: connected
  * right-angle paths that draw themselves in — vertical runs, sharp sideways
  * jogs, an occasional closed block — dashed like LED traces, twinkling per
@@ -27,7 +27,7 @@ import heronarts.lx.parameter.EnumParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class Synapse extends StrandPattern {
+public class Likes extends StrandPattern {
 
   public enum Trigger {
     BASS,
@@ -122,7 +122,7 @@ public class Synapse extends StrandPattern {
   private double randomTimer = 0;
   private double bloom = 0;
 
-  public Synapse(LX lx) {
+  public Likes(LX lx) {
     // Base registers color (circuit tint), speed (lifecycle pace), size (dash scale).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("density", this.density);
