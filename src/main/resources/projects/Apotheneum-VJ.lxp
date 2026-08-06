@@ -5109,6 +5109,515 @@
             ]
           },
           {
+            "id": 9844719,
+            "class": "heronarts.lx.mixer.LXChannel",
+            "internal": {
+              "modulationColor": 0,
+              "modulationControlsExpanded": true,
+              "modulationsExpanded": true,
+              "controlsExpandedCue": true,
+              "controlsExpandedAux": true,
+              "modulationExpanded": false,
+              "controlsExpanded": true,
+              "viewPatternLabel": false
+            },
+            "parameters": {
+              "label": "EXT-C",
+              "fader": 0.0,
+              "arm": false,
+              "selected": false,
+              "stopClips": false,
+              "enabled": true,
+              "cue": false,
+              "aux": false,
+              "crossfadeGroup": 0,
+              "crossfadeGroup/name": "BYPASS",
+              "blendMode": 0,
+              "autoMute": true,
+              "midiSource/index": 0,
+              "midiFilter/enabled": false,
+              "midiFilter/channel": 16,
+              "midiFilter/channel/name": "OMNI",
+              "midiFilter/minNote": 0,
+              "midiFilter/noteRange": 128,
+              "midiFilter/minVelocity": 1,
+              "midiFilter/velocityRange": 127,
+              "view": 15,
+              "compositeMode": 0,
+              "compositeMode/name": "PLAYLIST",
+              "compositeDampingEnabled": true,
+              "compositeDampingTimeSecs": 0.1,
+              "autoCycleEnabled": false,
+              "autoCycleMode": 1,
+              "autoCycleMode/name": "RANDOM",
+              "autoCycleTimeSecs": 45.0,
+              "transitionEnabled": true,
+              "transitionTimeSecs": 5.0,
+              "transitionBlendMode": 0,
+              "focusedPattern": 0,
+              "triggerPatternCycle": false,
+              "launchPatternCycle": false
+            },
+            "children": {
+              "modulation": {
+                "id": 9844720,
+                "class": "heronarts.lx.modulation.LXModulationEngine",
+                "internal": {
+                  "modulationColor": 0,
+                  "modulationControlsExpanded": true,
+                  "modulationsExpanded": true
+                },
+                "parameters": {
+                  "label": "Modulation"
+                },
+                "children": {},
+                "modulators": [],
+                "modulations": [],
+                "triggers": []
+              }
+            },
+            "effects": [],
+            "clips": [],
+            "patternIndex": 0,
+            "patterns": [
+              {
+                "id": 9844721,
+                "class": "apotheneum.piemonte.Afterglow"
+              },
+              {
+                "id": 9844722,
+                "class": "apotheneum.piemonte.CandyFlip"
+              },
+              {
+                "id": 9844723,
+                "class": "apotheneum.piemonte.ComeUp"
+              },
+              {
+                "id": 9844724,
+                "class": "apotheneum.piemonte.Cope"
+              },
+              {
+                "id": 9844725,
+                "class": "apotheneum.piemonte.Crush"
+              },
+              {
+                "id": 9844726,
+                "class": "apotheneum.piemonte.Destination"
+              },
+              {
+                "id": 9844727,
+                "class": "apotheneum.piemonte.UFOAbduction"
+              },
+              {
+                "id": 9844728,
+                "class": "apotheneum.piemonte.FeelSomething"
+              },
+              {
+                "id": 9844729,
+                "class": "apotheneum.piemonte.Handprint"
+              },
+              {
+                "id": 9844730,
+                "class": "apotheneum.piemonte.Hexed"
+              },
+              {
+                "id": 9844731,
+                "class": "apotheneum.piemonte.HolyWater"
+              },
+              {
+                "id": 9844732,
+                "class": "apotheneum.piemonte.Liftoff"
+              },
+              {
+                "id": 9844733,
+                "class": "apotheneum.piemonte.Mainframe"
+              },
+              {
+                "id": 9844734,
+                "class": "apotheneum.piemonte.Motherboard"
+              },
+              {
+                "id": 9844735,
+                "class": "apotheneum.piemonte.Pressure"
+              },
+              {
+                "id": 9844736,
+                "class": "apotheneum.piemonte.Origami"
+              },
+              {
+                "id": 9844737,
+                "class": "apotheneum.piemonte.ParticleWave"
+              },
+              {
+                "id": 9844738,
+                "class": "apotheneum.piemonte.PlayaStrobe"
+              },
+              {
+                "id": 9844739,
+                "class": "apotheneum.piemonte.Overflow"
+              },
+              {
+                "id": 9844740,
+                "class": "apotheneum.piemonte.Rain"
+              },
+              {
+                "id": 9844741,
+                "class": "apotheneum.piemonte.Replies"
+              },
+              {
+                "id": 9844742,
+                "class": "apotheneum.piemonte.ReUp"
+              },
+              {
+                "id": 9844743,
+                "class": "apotheneum.piemonte.Slipstream"
+              },
+              {
+                "id": 9844744,
+                "class": "apotheneum.piemonte.SpaceBoundSpecies"
+              },
+              {
+                "id": 9844745,
+                "class": "apotheneum.piemonte.SpecialKube"
+              },
+              {
+                "id": 9844746,
+                "class": "apotheneum.piemonte.Superbloom"
+              },
+              {
+                "id": 9844747,
+                "class": "apotheneum.piemonte.TheHumanRace"
+              },
+              {
+                "id": 9844748,
+                "class": "apotheneum.piemonte.Trains"
+              },
+              {
+                "id": 9844749,
+                "class": "apotheneum.piemonte.Trip"
+              },
+              {
+                "id": 9844750,
+                "class": "apotheneum.piemonte.TunnelVision"
+              },
+              {
+                "id": 9844751,
+                "class": "apotheneum.piemonte.Vibe"
+              },
+              {
+                "id": 9844752,
+                "class": "apotheneum.piemonte.Whiteout"
+              },
+              {
+                "id": 9844753,
+                "class": "apotheneum.piemonte.Synapse"
+              },
+              {
+                "id": 9844754,
+                "class": "apotheneum.piemonte.Zoetrope"
+              }
+            ]
+          },
+          {
+            "id": 9844755,
+            "class": "heronarts.lx.mixer.LXChannel",
+            "internal": {
+              "modulationColor": 0,
+              "modulationControlsExpanded": true,
+              "modulationsExpanded": true,
+              "controlsExpandedCue": true,
+              "controlsExpandedAux": true,
+              "modulationExpanded": false,
+              "controlsExpanded": true,
+              "viewPatternLabel": false
+            },
+            "parameters": {
+              "label": "INT-C",
+              "fader": 0.0,
+              "arm": false,
+              "selected": true,
+              "stopClips": false,
+              "enabled": true,
+              "cue": false,
+              "aux": false,
+              "crossfadeGroup": 0,
+              "crossfadeGroup/name": "BYPASS",
+              "blendMode": 0,
+              "autoMute": true,
+              "midiSource/index": 0,
+              "midiFilter/enabled": false,
+              "midiFilter/channel": 16,
+              "midiFilter/channel/name": "OMNI",
+              "midiFilter/minNote": 0,
+              "midiFilter/noteRange": 128,
+              "midiFilter/minVelocity": 1,
+              "midiFilter/velocityRange": 127,
+              "view": 14,
+              "compositeMode": 0,
+              "compositeMode/name": "PLAYLIST",
+              "compositeDampingEnabled": true,
+              "compositeDampingTimeSecs": 0.1,
+              "autoCycleEnabled": false,
+              "autoCycleMode": 1,
+              "autoCycleMode/name": "RANDOM",
+              "autoCycleTimeSecs": 45.0,
+              "transitionEnabled": true,
+              "transitionTimeSecs": 5.0,
+              "transitionBlendMode": 0,
+              "focusedPattern": 0,
+              "triggerPatternCycle": false,
+              "launchPatternCycle": false
+            },
+            "children": {
+              "modulation": {
+                "id": 9844756,
+                "class": "heronarts.lx.modulation.LXModulationEngine",
+                "internal": {
+                  "modulationColor": 0,
+                  "modulationControlsExpanded": true,
+                  "modulationsExpanded": true
+                },
+                "parameters": {
+                  "label": "Modulation"
+                },
+                "children": {},
+                "modulators": [],
+                "modulations": [],
+                "triggers": []
+              }
+            },
+            "effects": [
+              {
+                "id": 9844757,
+                "class": "heronarts.lx.effect.FreezeEffect",
+                "internal": {
+                  "modulationColor": 0,
+                  "modulationControlsExpanded": true,
+                  "modulationsExpanded": true,
+                  "expanded": true,
+                  "expandedCue": true,
+                  "expandedAux": true,
+                  "modulationExpanded": false
+                },
+                "parameters": {
+                  "label": "Freeze",
+                  "midiFilter/enabled": true,
+                  "midiFilter/channel": 16,
+                  "midiFilter/channel/name": "OMNI",
+                  "midiFilter/minNote": 0,
+                  "midiFilter/noteRange": 128,
+                  "midiFilter/minVelocity": 1,
+                  "midiFilter/velocityRange": 127,
+                  "view": 0,
+                  "viewPriority": 0,
+                  "enabled": true,
+                  "locked": false,
+                  "lock": false,
+                  "hold": false,
+                  "resample": false,
+                  "mix": 0.6085156250046566,
+                  "attackMs": 0.0,
+                  "releaseMs": 50.0,
+                  "mode": 0,
+                  "mode/name": "REPLACE"
+                },
+                "children": {
+                  "modulation": {
+                    "id": 9844758,
+                    "class": "heronarts.lx.modulation.LXModulationEngine",
+                    "internal": {
+                      "modulationColor": 0,
+                      "modulationControlsExpanded": true,
+                      "modulationsExpanded": true
+                    },
+                    "parameters": {
+                      "label": "Modulation"
+                    },
+                    "children": {},
+                    "modulators": [],
+                    "modulations": [],
+                    "triggers": []
+                  },
+                  "interval": {
+                    "id": 9844759,
+                    "class": "heronarts.lx.modulator.Interval",
+                    "internal": {
+                      "modulationColor": 0,
+                      "modulationControlsExpanded": true,
+                      "modulationsExpanded": true
+                    },
+                    "parameters": {
+                      "label": "Interval",
+                      "running": false,
+                      "trigger": false,
+                      "reset": false,
+                      "midiSource/index": 0,
+                      "midiFilter/enabled": true,
+                      "midiFilter/channel": 16,
+                      "midiFilter/channel/name": "OMNI",
+                      "midiFilter/minNote": 0,
+                      "midiFilter/noteRange": 128,
+                      "midiFilter/minVelocity": 1,
+                      "midiFilter/velocityRange": 127,
+                      "loop": true,
+                      "tempoSync": false,
+                      "tempoMultiplier": 4,
+                      "tempoMultiplier/name": "QUARTER",
+                      "tempoLock": true,
+                      "periodMs": 1000.0,
+                      "randomMs": 0.0,
+                      "chance": 100.0,
+                      "triggerOut": false
+                    },
+                    "children": {},
+                    "basis": 0.0
+                  }
+                },
+                "deviceVersion": -1
+              }
+            ],
+            "clips": [],
+            "patternIndex": 0,
+            "patterns": [
+              {
+                "id": 9844760,
+                "class": "apotheneum.piemonte.Afterglow"
+              },
+              {
+                "id": 9844761,
+                "class": "apotheneum.piemonte.CandyFlip"
+              },
+              {
+                "id": 9844762,
+                "class": "apotheneum.piemonte.ComeUp"
+              },
+              {
+                "id": 9844763,
+                "class": "apotheneum.piemonte.Cope"
+              },
+              {
+                "id": 9844764,
+                "class": "apotheneum.piemonte.Crush"
+              },
+              {
+                "id": 9844765,
+                "class": "apotheneum.piemonte.Destination"
+              },
+              {
+                "id": 9844766,
+                "class": "apotheneum.piemonte.UFOAbduction"
+              },
+              {
+                "id": 9844767,
+                "class": "apotheneum.piemonte.FeelSomething"
+              },
+              {
+                "id": 9844768,
+                "class": "apotheneum.piemonte.Handprint"
+              },
+              {
+                "id": 9844769,
+                "class": "apotheneum.piemonte.Hexed"
+              },
+              {
+                "id": 9844770,
+                "class": "apotheneum.piemonte.HolyWater"
+              },
+              {
+                "id": 9844771,
+                "class": "apotheneum.piemonte.Liftoff"
+              },
+              {
+                "id": 9844772,
+                "class": "apotheneum.piemonte.Mainframe"
+              },
+              {
+                "id": 9844773,
+                "class": "apotheneum.piemonte.Motherboard"
+              },
+              {
+                "id": 9844774,
+                "class": "apotheneum.piemonte.Pressure"
+              },
+              {
+                "id": 9844775,
+                "class": "apotheneum.piemonte.Origami"
+              },
+              {
+                "id": 9844776,
+                "class": "apotheneum.piemonte.ParticleWave"
+              },
+              {
+                "id": 9844777,
+                "class": "apotheneum.piemonte.PlayaStrobe"
+              },
+              {
+                "id": 9844778,
+                "class": "apotheneum.piemonte.Overflow"
+              },
+              {
+                "id": 9844779,
+                "class": "apotheneum.piemonte.Rain"
+              },
+              {
+                "id": 9844780,
+                "class": "apotheneum.piemonte.Replies"
+              },
+              {
+                "id": 9844781,
+                "class": "apotheneum.piemonte.ReUp"
+              },
+              {
+                "id": 9844782,
+                "class": "apotheneum.piemonte.Slipstream"
+              },
+              {
+                "id": 9844783,
+                "class": "apotheneum.piemonte.SpaceBoundSpecies"
+              },
+              {
+                "id": 9844784,
+                "class": "apotheneum.piemonte.SpecialKube"
+              },
+              {
+                "id": 9844785,
+                "class": "apotheneum.piemonte.Superbloom"
+              },
+              {
+                "id": 9844786,
+                "class": "apotheneum.piemonte.TheHumanRace"
+              },
+              {
+                "id": 9844787,
+                "class": "apotheneum.piemonte.Trains"
+              },
+              {
+                "id": 9844788,
+                "class": "apotheneum.piemonte.Trip"
+              },
+              {
+                "id": 9844789,
+                "class": "apotheneum.piemonte.TunnelVision"
+              },
+              {
+                "id": 9844790,
+                "class": "apotheneum.piemonte.Vibe"
+              },
+              {
+                "id": 9844791,
+                "class": "apotheneum.piemonte.Whiteout"
+              },
+              {
+                "id": 9844792,
+                "class": "apotheneum.piemonte.Synapse"
+              },
+              {
+                "id": 9844793,
+                "class": "apotheneum.piemonte.Zoetrope"
+              }
+            ]
+          },
+          {
             "id": 2559,
             "class": "heronarts.lx.mixer.LXChannel",
             "internal": {
