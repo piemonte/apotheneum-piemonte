@@ -165,7 +165,9 @@ public class ComeUp extends ParameterPattern {
   protected void render(double deltaMs) {
     setColors(LXColor.BLACK);
 
-    final double speed = getSpeed();
+    // power curve: default (1.0) unchanged, but the ends bite — crawl at the
+    // bottom of the knob, ~9x fill rate at the top
+    final double speed = Math.pow(getSpeed(), 1.6);
     final double holdAmt = this.hold.getValue();
     final int bubbleCount = this.bubbles.getValuei();
     final double sparkleAmt = this.sparkle.getValue();
