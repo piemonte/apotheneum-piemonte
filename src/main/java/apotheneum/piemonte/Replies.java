@@ -175,7 +175,9 @@ public class Replies extends ParameterPattern {
     final double gap = 1.0 / dotsPer;
     final double tailLen = this.tail.getValue() * gap;
     final double gamma = LXUtils.lerp(3.0, 0.5, getSize());
-    final double flashRadius = Math.min(0.1, 1.5 * gap);
+    // Wow = chain reactions: bursts flare wider and echo across the surface
+    final double wow = getWow();
+    final double flashRadius = Math.min(0.1 + wow * 0.15, (1.5 + wow * 2.5) * gap);
 
     // --- advance + collide ---
     int bursts = 0;
@@ -202,6 +204,12 @@ public class Replies extends ParameterPattern {
         s.cooldown[q] = COOLDOWN_MS;
         s.flashEnv[q] = 1.0;
         s.flashPos[q] = hitPos;
+        // echo: a burst ripples into a neighboring sequence at high Wow
+        if (wow > 0.25 && Math.random() < wow * 0.7) {
+          final int q2 = (q + 1 + (int) (Math.random() * 3)) % s.flashEnv.length;
+          s.flashEnv[q2] = Math.max(s.flashEnv[q2], 0.7);
+          s.flashPos[q2] = Math.random();
+        }
         ++bursts;
       }
     }

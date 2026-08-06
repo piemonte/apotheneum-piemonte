@@ -67,7 +67,9 @@ public class WYD extends ParameterPattern {
     this.timeMs += deltaMs;
 
     final double speed = getSpeed();
-    final double drift = this.timeMs * 0.00035 * speed;     // horizontal flow
+    final double wow = getWow();
+    // Wow = wind gust: the silk whips harder, flows faster, crests blaze
+    final double drift = this.timeMs * 0.00035 * speed * (1 + wow * 1.2); // horizontal flow
     final float tEvolve = (float) (this.timeMs * 0.0002 * (0.4 + speed));
     final double dens = this.density.getValuei();
     final double sharp = 3.0 + (1.0 - getSize()) * 34.0;    // thinner lines when Size is low
@@ -97,7 +99,7 @@ public class WYD extends ParameterPattern {
         // warp field bends the horizontal streamlines (seamless in 3D world space)
         float warp = Noise.stb_perlin_fbm_noise3(
           (float) (p.xn * FX + drift), p.zn * FX, tEvolve, 2.0f, 0.5f, 3);
-        double phase = (p.yn * dens - warp * WARP) * TAU;
+        double phase = (p.yn * dens - warp * WARP * (1 + getWow() * 1.4)) * TAU;
         double v = 0.5 + 0.5 * Math.cos(phase);
         double line = Math.pow(v, sharp);
         // a finer secondary layer for silky detail

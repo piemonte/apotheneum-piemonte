@@ -168,7 +168,10 @@ public class Crush extends ParameterPattern {
     final boolean drop = detectDrop(deltaMs);
     final double bandH = 1.0 / n;
     this.flashMs = Math.max(0, this.flashMs - deltaMs);
-    this.orbit += ORBIT_RATE * speed * deltaMs;
+    final double wow = getWow();
+    // Wow = frenzy: the spiral spins harder, pours churn taller and run
+    // faster, and the teardown rips through quicker
+    this.orbit += ORBIT_RATE * speed * deltaMs * (1 + wow * 3);
 
     // --- build phase: spiraling beams stack up the gradient ---
     if (!this.full) {
@@ -195,8 +198,8 @@ public class Crush extends ParameterPattern {
         this.nextOffset = this.gradOffset + GRAD_STEP;
       }
     } else {
-      this.pourLevel -= POUR_RATE * speed * deltaMs * (1 + this.levelEnv * 0.8);
-      final double amp = 0.05 + getSize() * 0.09;
+      this.pourLevel -= POUR_RATE * speed * deltaMs * (1 + this.levelEnv * 0.8 + wow * 0.9);
+      final double amp = (0.05 + getSize() * 0.09) * (1 + wow * 0.8);
       if (this.pourLevel < -amp - 0.05) {
         this.gradOffset = this.nextOffset;
         this.pouring = false;
@@ -208,7 +211,7 @@ public class Crush extends ParameterPattern {
       }
     }
     if (this.tearing) {
-      this.tearT += deltaMs * Math.max(0.02, getSpeed()) * 2 / TEAR_MS;
+      this.tearT += deltaMs * Math.max(0.02, getSpeed()) * 2 * (1 + wow) / TEAR_MS;
       if (this.tearT >= 1.1) {
         final double keepOffset = this.gradOffset;
         reset(this.bands.getValuei());
@@ -226,7 +229,7 @@ public class Crush extends ParameterPattern {
     final int beamColor = this.full ? 0 : gradient(beamLerp);
     final double beamTop = this.beamBottom + bandH;
     final double flashE = this.flashMs / 250.0;
-    final double amp = 0.05 + getSize() * 0.09; // pour surface amplitude
+    final double amp = (0.05 + getSize() * 0.09) * (1 + wow * 0.8); // pour surface amplitude
     final boolean strobeOn = this.strobe.isOn()
       && (frac0(this.timeMs * 0.001 * STROBE_HZ) < 0.45);
 

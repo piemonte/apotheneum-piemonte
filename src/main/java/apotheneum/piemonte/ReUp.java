@@ -103,7 +103,10 @@ public class ReUp extends ParameterPattern {
 
     boolean beat = detectBeat(deltaMs);
 
-    final double reup = REUP_PER_MS * Math.max(0.02, getSpeed()) * deltaMs;
+    // Wow = mayhem: wider knockouts, faster re-up, and hard hits black out
+    // the entire curtain in one sweep
+    final double wow = getWow();
+    final double reup = REUP_PER_MS * Math.max(0.02, getSpeed()) * deltaMs * (1 + wow * 1.2);
     final int base = getColor();
     final Target t = this.target.getEnum();
 
@@ -128,13 +131,21 @@ public class ReUp extends ParameterPattern {
     }
     // on a beat, knock out a random contiguous group (wider with louder hits + Size)
     if (beat) {
-      double frac = 0.04 + (0.06 + getSize() * 0.30) * level;
-      int len = Math.max(1, (int) (w * frac));
-      int start = (int) (Math.random() * w);
-      s.knockout(start, len);
-      // occasionally a second cluster for a busier feel
-      if (Math.random() < 0.5 * level) {
-        s.knockout((int) (Math.random() * w), Math.max(1, len / 2));
+      final double wowK = getWow();
+      if (wowK > 0.5 && level > 0.7) {
+        s.knockout(0, w); // total blackout wave: the whole curtain re-ups at once
+      } else {
+        double frac = (0.04 + (0.06 + getSize() * 0.30) * level) * (1 + wowK * 1.5);
+        int len = Math.max(1, (int) (w * frac));
+        int start = (int) (Math.random() * w);
+        s.knockout(start, len);
+        // extra clusters for a busier feel as Wow rises
+        if (Math.random() < 0.5 * level + wowK * 0.4) {
+          s.knockout((int) (Math.random() * w), Math.max(1, len / 2));
+        }
+        if (wowK > 0.3 && Math.random() < wowK * 0.5) {
+          s.knockout((int) (Math.random() * w), Math.max(1, len / 2));
+        }
       }
     }
 

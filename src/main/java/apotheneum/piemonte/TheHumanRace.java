@@ -179,10 +179,13 @@ public class TheHumanRace extends ParameterPattern {
     }
 
     final double speed = Math.max(0.02, getSpeed());
-    final double dtS = speed * deltaMs;
+    // Wow = festival: the crowd dances harder, more vivid figures light up,
+    // and the camera sweeps faster through them
+    final double wow = getWow();
+    final double dtS = speed * deltaMs * (1 + wow * 0.6);
     this.timeMs += deltaMs;
-    this.camZ += GLIDE * dtS;                       // glide forward
-    this.camX = 18 * Math.sin(this.timeMs * 0.00005); // gentle side drift
+    this.camZ += GLIDE * dtS * (1 + wow);           // glide forward
+    this.camX = 18 * Math.sin(this.timeMs * 0.00005 * (1 + wow)); // side drift
     final double baseYaw = 0.35 * Math.sin(this.timeMs * 0.00008); // gentle pan
 
     // advance the walk cycle
@@ -192,7 +195,7 @@ public class TheHumanRace extends ParameterPattern {
     }
 
     final double baseHue = LXColor.h(getColor());
-    final double specksFrac = this.specks.getValue();
+    final double specksFrac = Math.min(1, this.specks.getValue() * (1 + wow * 3));
     final double sizeF = 0.5 + getSize() * 1.5;
     final double terrScale = this.terrain.getValue() * TERR_MAXH;
 
@@ -256,7 +259,7 @@ public class TheHumanRace extends ParameterPattern {
     final double headCy = py - h * 0.86;
     final double hipY = py - h * 0.40;
     final double shoulderY = headCy + headR + h * 0.06;
-    final double sway = Math.sin(wphase) * h * 0.13;
+    final double sway = Math.sin(wphase) * h * (0.13 + getWow() * 0.14); // dancing at high Wow
 
     splat(p, px, headCy, headR, bright, color);                       // head
     line(p, px, headCy + headR, px, hipY, r, bright, color);          // torso
