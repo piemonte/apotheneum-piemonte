@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Motherboard — a dense fixed curtain of vertical strands shimmers with light
+ * Overclock — a dense fixed curtain of vertical strands shimmers with light
  * streaming downward into a bright pool at the floor, while a circuit maze of
  * horizontal traces and right-angle jogs glows near the hang line, slowly
  * re-routing itself. The whole room breathes between emerald and azure in long
@@ -25,7 +25,7 @@ import heronarts.lx.parameter.DiscreteParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class Motherboard extends StrandPattern {
+public class Overclock extends StrandPattern {
 
   private static final int MAX_PACKETS = 12;
   private static final double HUE_A = 125; // emerald
@@ -69,7 +69,7 @@ public class Motherboard extends StrandPattern {
   private final Surface cylinder = new Surface();
   private double pulse = 0;
 
-  public Motherboard(LX lx) {
+  public Overclock(LX lx) {
     // Base registers color (hue shift), speed (breath pace), size (shimmer depth).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("traces", this.traces);

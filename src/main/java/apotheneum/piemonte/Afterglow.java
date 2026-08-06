@@ -38,7 +38,7 @@ public class Afterglow extends ParameterPattern {
   private static final double CYCLE_MS = 3000; // one pulse cycle at speed 1
 
   public final DiscreteParameter stars =
-    new DiscreteParameter("Stars", 20, 6, MAX_STARS)
+    new DiscreteParameter("Stars", 28, 6, MAX_STARS)
     .setDescription("How many stars pulse on each surface");
 
   public final CompoundParameter reach =
@@ -46,7 +46,7 @@ public class Afterglow extends ParameterPattern {
     .setDescription("How far the pulses travel before dying");
 
   public final DiscreteParameter pulses =
-    new DiscreteParameter("Pulses", 3, 1, 6)
+    new DiscreteParameter("Pulses", 4, 1, 8)
     .setDescription("Concurrent pulses per ray");
 
   public final CompoundParameter sensitivity =
@@ -148,8 +148,12 @@ public class Afterglow extends ParameterPattern {
       this.unison += deltaMs / 700.0;
       if (this.unison >= 1) this.unison = -1;
     }
-    // louder music quickens the breathing slightly
-    this.phase += deltaMs * speed * (1.0 + this.levelEnv * 0.4) / CYCLE_MS;
+    // louder music quickens the breathing slightly; the knob maps to a wide
+    // rate range (crawl at 0 -> ~6x at full) so Speed has real impact
+    final double rate = (speed <= 0.5)
+      ? 0.05 + 0.9 * speed
+      : 0.5 + (speed - 0.5) * 5.0;
+    this.phase += deltaMs * rate * (1.0 + this.levelEnv * 0.4) / CYCLE_MS;
 
     final Target t = this.target.getEnum();
     if (t != Target.CYLINDER) {
@@ -172,7 +176,8 @@ public class Afterglow extends ParameterPattern {
     final double wow = getWow();
     final int nStars = this.stars.getValuei();
     final int nPulses = this.pulses.getValuei();
-    final double maxTravel = (h * 0.5) * this.reach.getValue();
+    // full-canvas reach: default sends pulses ~0.85x the surface height, max well past it
+    final double maxTravel = h * (0.25 + 1.05 * this.reach.getValue());
     final double dotR = 1.0 + getSize() * 1.6; // >=1 so sub-pixel motion stays smooth
     final boolean diagonals = wow > 0.15;
     final double gain = (1.0 + wow * 0.5) * (1.0 + this.levelEnv * 0.5 + this.beatPulse * 0.35);
@@ -209,6 +214,18 @@ public class Afterglow extends ParameterPattern {
             splat(o, w, h, sx + ux * uTravel, sy + uy * uTravel, dotR, uFade, LXColor.WHITE);
           }
         }
+      }
+    }
+
+    // Wow: glowy glitch — random pixels flare softly across the whole canvas
+    if (wow > 0.05) {
+      final int glints = (int) (w * h * 0.012 * wow);
+      for (int g = 0; g < glints; ++g) {
+        final double gx = Math.random() * w;
+        final double gy = Math.random() * h;
+        final double gb = (0.25 + Math.random() * 0.75) * wow;
+        final int gc = LXColor.lerp(base, LXColor.WHITE, (float) (0.5 + Math.random() * 0.5));
+        splat(o, w, h, gx, gy, 1.2, gb, gc);
       }
     }
   }

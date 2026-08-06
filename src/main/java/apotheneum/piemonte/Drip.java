@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * HolyWater — standing strands of light hang from the rim to the floor like a
+ * Drip — standing strands of light hang from the rim to the floor like a
  * beaded curtain in a cathedral dome, each one scintillating downward so the
  * light seems to pour without ever falling. At the base every strand bends
  * into a hook and trails outward along the floor, and a bright fountain
@@ -26,7 +26,7 @@ import heronarts.lx.parameter.DiscreteParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class HolyWater extends StrandPattern {
+public class Drip extends StrandPattern {
 
   private static final int MAX_STREAMS = 40;
   // scene legs: { perimeterHue, sat, bright, centerHue, holdMs, snap(0/1) }
@@ -55,7 +55,7 @@ public class HolyWater extends StrandPattern {
   private double sceneClock = 0;
   private int scene = 0;
 
-  public HolyWater(LX lx) {
+  public Drip(LX lx) {
     // Base registers color (hue shift), speed (scene pace + shimmer), size (strand weight).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("streams", this.streams);

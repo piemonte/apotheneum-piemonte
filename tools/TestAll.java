@@ -13,12 +13,40 @@ import java.util.List;
  */
 public class TestAll {
   static final String[] PATTERNS = {
-    "Afterglow", "CandyFlip", "ComeUp", "Cope", "Crush", "Destination",
-    "FeelSomething", "Handprint", "Hexed", "HolyWater", "Liftoff",
-    "Mainframe", "Motherboard", "Origami", "Overflow", "ParticleWave", "PlayaStrobe",
-    "Pressure", "Rain", "Replies", "ReUp", "Slipstream", "SpaceBoundSpecies",
-    "SpecialKube", "Superbloom", "Synapse", "TheHumanRace", "Trains", "Trip", "TunnelVision", "UFOAbduction",
-    "Vibe", "Whiteout", "Zoetrope"
+    "Afterglow",
+    "CandyFlip",
+    "ComeUp",
+    "Cope",
+    "Crush",
+    "Destination",
+    "Digits",
+    "Downlink",
+    "Drip",
+    "FeelSomething",
+    "Handprint",
+    "Liftoff",
+    "Origami",
+    "Overclock",
+    "Overflow",
+    "ParticleWave",
+    "PlayaStrobe",
+    "Pressure",
+    "Radiate",
+    "Rain",
+    "Replies",
+    "ReUp",
+    "SpaceBoundSpecies",
+    "SpecialKube",
+    "Superbloom",
+    "Synapse",
+    "TheHumanRace",
+    "Trains",
+    "Trip",
+    "TunnelVision",
+    "UFOAbduction",
+    "Vibe",
+    "Whiteout",
+    "Zoetrope"
   };
 
   public static void main(String[] args) throws Exception {

@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Mainframe — the strand curtains run a raw machine-room program: emerald
+ * Downlink — the strand curtains run a raw machine-room program: emerald
  * matrix-rain pours down the columns while the whole room washes through slow
  * color floods — green, then red, then amber — and sparse blocky data-glyphs
  * flicker on and re-roll with the beat. Cyan service strips glow along the
@@ -22,7 +22,7 @@ import heronarts.lx.parameter.CompoundParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class Mainframe extends StrandPattern {
+public class Downlink extends StrandPattern {
 
   private static final int MAX_DROPS = 400;
   private static final int GLYPHS = 10;
@@ -67,7 +67,7 @@ public class Mainframe extends StrandPattern {
   private double pulse = 0;
   private double floodLvl = 0; // asymmetric flood envelope: snap up, breathe down
 
-  public Mainframe(LX lx) {
+  public Downlink(LX lx) {
     // Base registers color (hue shift), speed (rain fall rate), size (glyph scale).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("rain", this.rain);

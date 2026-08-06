@@ -9,7 +9,7 @@
  * drum. Brightness pulses with the beat; Speed is bipolar, so the drum spins
  * either direction. Turn up Wow and the spin goes stepped and glitchy — the
  * bars jump azimuth on hits and flicker, the way the reference actually moves.
- * Split out of the Mainframe reference (holotrigger studio session).
+ * Split out of the Downlink reference (holotrigger studio session).
  *
  * Best viewed in deep playa or in the dust.
  */

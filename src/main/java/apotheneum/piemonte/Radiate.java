@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Slipstream — cylinder only. You stand where the performer sat, on a floor of
+ * Radiate — cylinder only. You stand where the performer sat, on a floor of
  * LED dots: dotted rays fan outward all around you — up the walls, since out
  * on the floor is up on the cylinder — their dot-chains crawling slowly
  * outward, faster on the bass. Dotted rings hug the center below them, red
@@ -29,7 +29,7 @@ import heronarts.lx.parameter.DiscreteParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class Slipstream extends ParameterPattern {
+public class Radiate extends ParameterPattern {
 
   private static final int MAX_RAYS = 90;
   private static final double SCENE_MS = 6700;   // per palette scene (~40s arc / 6)
@@ -65,7 +65,7 @@ public class Slipstream extends ParameterPattern {
   private double dotFlow = 0;    // outward crawl of the dot chains
   private double ringFlow = 0;
 
-  public Slipstream(LX lx) {
+  public Radiate(LX lx) {
     // Base registers color (global hue shift), speed (crawl rate), size (dot size/spacing).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("rays", this.rays);

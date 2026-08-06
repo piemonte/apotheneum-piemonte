@@ -17,22 +17,22 @@ exterior + interior surfaces, 28,512 nodes).
 | **Cope** | Thick bars of light on the structure's vertical edges breathe with the music; bass drops erupt into radial shock rings that bloom across the surfaces |
 | **Crush** | Gradient beams with hot white heads descend and stack from the floor up, flashing on landing, until the whole piece fills into a cycling color gradient |
 | **Destination** | A blazing point at the center of each face throws flickering radial streaks with per-ray hues — a distant sun at the end of a long dark hall |
+| **Digits** | A giant terminal readout: huge white-hot characters over a dim churning field of blue log-glyphs, red/blue strand flares on every swap, and a rare hard red flood |
+| **Downlink** | Emerald matrix-rain and red data-bars persist over a room flood that snaps green↔red through amber, above a warm console ring and glittering green floor puddles |
+| **Drip** | Standing beaded strands hang rim to floor, scintillating downward and curling into floor hooks; the room journeys through green, red, blue, gold, white, and blackout scenes |
 | **FeelSomething** | Colored sticks rain down, bounce and tumble end over end, throwing off bursts of white-hot sparks with every impact until they settle |
 | **Handprint** | Procedurally drawn handprints with fingerprint-ridge detail press onto the surfaces like hands on glass, hold, and lift away |
-| **Hexed** | A giant terminal readout: huge white-hot characters over a dim churning field of blue log-glyphs, red/blue strand flares on every swap, and a rare hard red flood |
-| **HolyWater** | Standing beaded strands hang rim to floor, scintillating downward and curling into floor hooks; the room journeys through green, red, blue, gold, white, and blackout scenes |
 | **Liftoff** | Fuses climb every vertical string and burst in bright flashes, ember trails lingering; kicks detonate on the beat and drops launch a multi-rocket volley |
-| **Mainframe** | Emerald matrix-rain and red data-bars persist over a room flood that snaps green↔red through amber, above a warm console ring and glittering green floor puddles |
-| **Motherboard** | A dense fixed strand curtain shimmers downward into a bright floor pool while a circuit maze re-routes at the hang line; the room breathes emerald↔azure through near-black |
 | **Origami** | A sheet ruled with drifting diagonal lines folds on the beat (or the button): flaps sweep over with a white crease flash, each fold revealing a new color layer |
+| **Overclock** | A dense fixed strand curtain shimmers downward into a bright floor pool while a circuit maze re-routes at the hang line; the room breathes emerald↔azure through near-black |
 | **Overflow** | A segmented band of red/green equalizer blocks hangs mid-wall, reconfiguring like letterforms, pulsing with the beat, pooling on the floor, and flooding the room green on drops |
 | **ParticleWave** | A rolling swell of shimmering glitter sweeps around the structure through a dark starfield, foam sparkling along its crest; storms bring blue sparkle bursts |
 | **PlayaStrobe** | A storm-torn glint band rakes continuously around the room over a faint churning floor; the operator's Strobe button fires pulsating white bursts that decay away |
 | **Pressure** | Discrete curtain panels gate hard on/off to the music — a green wall speckled with coexisting red, breathing dark-bright-dark over a warm floor ember that never goes out |
+| **Radiate** | Cylinder only: dotted rays fan up the walls around you with red rings hugging the base; beats bloom brightness from the center outward, quiet collapses into a twinkling starfield |
 | **Rain** | A heavy downpour of vertical streaks; each drop splashes on the floor line and the water arcs back up before falling again |
-| **Replies** | Glowing dots glide the interior rings and columns; when two collide they burst, and the matching exterior surface flickers in reply — the outer chamber answering the inner |
 | **ReUp** | Every string lit solid; bass hits knock random groups dark and they fade back up — an audio curtain that keeps rebuilding itself |
-| **Slipstream** | Cylinder only: dotted rays fan up the walls around you with red rings hugging the base; beats bloom brightness from the center outward, quiet collapses into a twinkling starfield |
+| **Replies** | Glowing dots glide the interior rings and columns; when two collide they burst, and the matching exterior surface flickers in reply — the outer chamber answering the inner |
 | **SpaceBoundSpecies** | A flight through a starfield, each face a window with its own vanishing point — drifting twinkles with diffraction spikes at rest, hyperspace warp streaks at speed |
 | **SpecialKube** | Spinning wireframe 3D cubes tumble down the panels; the special ones glitch — jittering, flashing cyan-white, and strobing in sync |
 | **Superbloom** | Green pixel-chunk buds swell and blossom into giant top-down flowers in wild colors — six species with alternating petals — spinning to the music before folding away |
