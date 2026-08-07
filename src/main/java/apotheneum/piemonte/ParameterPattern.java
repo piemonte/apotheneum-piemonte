@@ -16,8 +16,8 @@
  * Created by patrick piemonte
  *
  * ParameterPattern — an intermediate base (ApotheneumPattern → ParameterPattern
- * → your pattern) that fixes a consistent leading parameter order: color, speed,
- * size, wow. Every pattern that extends it gets those four controls in the same
+ * → your pattern) that fixes a consistent leading parameter order: color, hue,
+ * speed, size, wow. Every pattern that extends it gets those four controls in the same
  * place, and the correct LinkedColorParameter palette init (setMode after
  * addParameter) is centralized here. Subclasses extend this, then add their own
  * parameters (and any extra colors) after super(...). Kept self-contained so
@@ -33,6 +33,7 @@ package apotheneum.piemonte;
 
 import apotheneum.ApotheneumPattern;
 import heronarts.lx.LX;
+import heronarts.lx.color.LXColor;
 import heronarts.lx.color.LinkedColorParameter;
 import heronarts.lx.parameter.CompoundParameter;
 
@@ -42,6 +43,12 @@ public abstract class ParameterPattern extends ApotheneumPattern {
   public final LinkedColorParameter color =
     new LinkedColorParameter("Color")
     .setDescription("Primary color (follows the palette)");
+
+  /** Hue shift (degrees) applied on top of the primary color. */
+  public final CompoundParameter hue =
+    new CompoundParameter("Hue", 0, 0, 360)
+    .setDescription("Hue shift applied to the primary color")
+    .setWrappable(true);
 
   /** Animation speed. Range/polarity set per-subclass via the constructor. */
   public final CompoundParameter speed;
@@ -77,8 +84,9 @@ public abstract class ParameterPattern extends ApotheneumPattern {
     this.size = new CompoundParameter("Size", sizeDef, sizeMin, sizeMax)
       .setDescription("Element size");
 
-    // Canonical leading order: color, speed, size, wow. Subclasses add the rest.
+    // Canonical leading order: color, hue, speed, size, wow. Subclasses add the rest.
     addParameter("color", this.color);
+    addParameter("hue", this.hue);
     addParameter("speed", this.speed);
     addParameter("size", this.size);
     addParameter("wow", this.wow);
@@ -91,9 +99,17 @@ public abstract class ParameterPattern extends ApotheneumPattern {
   // inherited params directly, e.g. this.speed.setExponent(2) or
   // this.size.setUnits(LXParameter.Units.INTEGER), in their constructor.
 
-  /** Resolved primary color for this frame (palette- or static-linked). */
+  /**
+   * Resolved primary color for this frame (palette- or static-linked), with
+   * the Hue knob's shift applied — one dial to steer every pattern's colors.
+   */
   protected int getColor() {
-    return this.color.calcColor();
+    final int c = this.color.calcColor();
+    final float shift = this.hue.getValuef();
+    if (shift == 0) {
+      return c;
+    }
+    return LXColor.hsb((LXColor.h(c) + shift) % 360, LXColor.s(c), LXColor.b(c));
   }
 
   /** Current speed value (bipolar when the configured minimum is negative). */
