@@ -4,13 +4,15 @@
  * Created by patrick piemonte
  *
  * LockedIn — sets of thick bars lock into the center of the canvas, one color
- * at a time. A set of bars at varied lengths beams in from the bottom with
- * the UFOAbduction feel — fast entry, decelerating as they near the middle —
- * then the whole set bops up and down for a moment before freezing in place.
- * The next set enters from the top at a new horizontal offset and color,
- * overlaps, bops, freezes. Five colors stack this way — alternating bottom
- * and top entries — then the whole lock releases, fades, and the cycle
- * begins again. Beats punch the bop; Wow adds bounce energy and jitter.
+ * at a time. Each bar is a solid column anchored to its entry edge, growing
+ * toward the middle with the UFOAbduction feel — fast travel, decelerating on
+ * approach — then bouncing on the same velocity model, each bar on its own
+ * clock and reach, before freezing in place. Sets alternate bottom and top
+ * entries, each at a new horizontal offset, cycling through five colors and
+ * layering endlessly: the stack never fades — new sets keep locking in over
+ * the old, and only when a color comes back around does its previous layer
+ * yield to the fresh one rising from the edge. Beats punch the bounces; Wow
+ * adds bounce reach and shimmer.
  *
  * Best viewed in deep playa or in the dust.
  */
@@ -28,15 +30,14 @@ import heronarts.lx.utils.LXUtils;
 @LXCategory("Apotheneum/piemonte")
 public class LockedIn extends StrandPattern {
 
-  private static final int MAX_GENS = 5;   // five colors stack per cycle
+  private static final int N_COLORS = 5;    // hues cycled across sets
+  private static final int MAX_LAYERS = 10; // frozen sets kept on the canvas
   private static final int MAX_BARS = 16;
   // UFOAbduction-style approach: quick entry, deceleration into the center
   private static final double V_ENTER = 0.0016;  // heights/ms far from rest
   private static final double V_NEAR = 0.00030;  // crawl arriving at center
-  private static final double BOP_MS = 1500;     // bop phase duration
-  private static final double BOP_PERIOD = 380;  // bounce period
-  private static final double HOLD_MS = 2000;    // full stack hold before release
-  private static final double FADE_MS = 900;
+  private static final double BOUNCE_DECAY = 0.78; // per-bounce settle
+  private static final double RELAUNCH_MS = 450;   // breath between sets
   private static final double[] HUE_STEPS = { 0, 52, 125, 205, 288 };
 
   public final DiscreteParameter bars =
@@ -45,21 +46,31 @@ public class LockedIn extends StrandPattern {
 
   public final CompoundParameter sensitivity =
     new CompoundParameter("Sens", 0.5, 0, 1)
-    .setDescription("How hard beats punch the bop");
+    .setDescription("How hard beats punch the bounce");
 
-  // generation layout (normalized; shared across surfaces)
-  private final double[][] genX = new double[MAX_GENS][MAX_BARS];
-  private final double[][] genLen = new double[MAX_GENS][MAX_BARS];
-  private final double[][] genYc = new double[MAX_GENS][MAX_BARS];
-  private final double[][] lenVar = new double[MAX_GENS][MAX_BARS];
-  private final boolean[] fromTop = new boolean[MAX_GENS];
+  // layered set state (normalized; shared across surfaces)
+  private final double[][] layX = new double[MAX_LAYERS][MAX_BARS];
+  private final double[][] layLen = new double[MAX_LAYERS][MAX_BARS];
+  private final double[][] layYc = new double[MAX_LAYERS][MAX_BARS];
+  private final double[][] lenVar = new double[MAX_LAYERS][MAX_BARS];
+  private final int[] layerHue = new int[MAX_LAYERS];
+  private final boolean[] layerFromTop = new boolean[MAX_LAYERS];
+  private final boolean[] layerLive = new boolean[MAX_LAYERS];
 
-  private int gen = 0;          // active generation
-  private int phase = 0;        // 0 = enter, 1 = bop, 2 = hold-all, 3 = fade-all
-  private double pos = 1.2;     // active set's travel position (normalized offset)
-  private double phaseT = 0;
+  private int gen = 0;           // total sets launched
+  private int activeLayer = -1;  // layer currently animating, -1 = between sets
+  private double pauseMs = 0;
   private double bopKick = 0;
   private boolean laidOut = false;
+
+  // per-bar independent motion within the active set
+  private final int[] barPhase = new int[MAX_BARS];  // 0 enter, 1 bounce, 2 frozen
+  private final double[] barPos = new double[MAX_BARS];
+  private final double[] barDelay = new double[MAX_BARS];
+  private final double[] barVf = new double[MAX_BARS];
+  private final double[] barBopPh = new double[MAX_BARS];
+  private final double[] barTgt = new double[MAX_BARS];   // current bounce target
+  private final int[] barBounce = new int[MAX_BARS];      // reversals remaining
 
   public LockedIn(LX lx) {
     // Base registers color (wheel anchor), speed (pace), size (bar thickness).
@@ -69,6 +80,13 @@ public class LockedIn extends StrandPattern {
     addTargetParameter();
   }
 
+  /** Per-bar bounce reach: base + Wow + beat punch, widely varied per bar. */
+  private double bounceAmp(int l, int b) {
+    return (0.09 + getWow() * 0.06
+      + this.bopKick * 0.05 * this.sensitivity.getValue())
+      * (0.45 + 1.15 * hashd(l * 97 + b * 31));
+  }
+
   private static double hashd(int n) {
     int h = n * 374761393;
     h = (h ^ (h >>> 13)) * 1103515245;
@@ -76,32 +94,39 @@ public class LockedIn extends StrandPattern {
     return (h & 0x7fffffff) / (double) 0x7fffffff;
   }
 
-  private void layout() {
-    for (int g = 0; g < MAX_GENS; ++g) {
-      this.fromTop[g] = (g & 1) == 1; // alternate bottom / top entries
-      final double off = Math.random(); // per-set horizontal offset
-      for (int b = 0; b < MAX_BARS; ++b) {
-        this.genX[g][b] = (off + (double) b / MAX_BARS
-          + (Math.random() - 0.5) * 0.02) % 1.0;
-        this.genLen[g][b] = 0.14 + Math.random() * 0.30; // varied lengths
-        this.genYc[g][b] = 0.42 + Math.random() * 0.16;  // rest around center
-        this.lenVar[g][b] = 0.8 + Math.random() * 0.4;
-      }
+  /** Launch the next set: claim a layer (recycling the oldest) and arm bars. */
+  private void launchSet() {
+    final int l = this.gen % MAX_LAYERS;
+    this.activeLayer = l;
+    this.layerHue[l] = this.gen % N_COLORS;
+    this.layerFromTop[l] = (this.gen & 1) == 1; // alternate bottom / top
+    this.layerLive[l] = true;
+    final double off = Math.random(); // per-set horizontal offset
+    for (int b = 0; b < MAX_BARS; ++b) {
+      this.layX[l][b] = (off + (double) b / MAX_BARS
+        + (Math.random() - 0.5) * 0.02) % 1.0;
+      this.layLen[l][b] = 0.14 + Math.random() * 0.30; // varied reach
+      this.layYc[l][b] = 0.42 + Math.random() * 0.16;  // tips around center
+      this.lenVar[l][b] = 0.8 + Math.random() * 0.4;
+      this.barPhase[b] = 0;
+      this.barPos[b] = (this.layerFromTop[l] ? -1 : 1)
+        * (1.05 + Math.random() * 0.30);
+      this.barDelay[b] = Math.random() * 900;
+      this.barVf[b] = 0.7 + Math.random() * 0.6;
+      this.barBopPh[b] = Math.random();
+      this.barTgt[b] = 0;
+      this.barBounce[b] = 0;
     }
-    this.gen = 0;
-    this.phase = 0;
-    this.pos = 1.2;
-    this.phaseT = 0;
-    this.laidOut = true;
   }
 
   @Override
   protected void advance(double deltaMs) {
     if (!this.laidOut) {
-      layout();
+      this.gen = 0;
+      launchSet();
+      this.laidOut = true;
     }
     final double speed = Math.max(0.05, getSpeed());
-    final double wow = getWow();
     final double dt = deltaMs * speed * 2;
 
     if (this.beat) {
@@ -109,50 +134,70 @@ public class LockedIn extends StrandPattern {
     }
     this.bopKick *= Math.exp(-deltaMs / 260.0);
 
-    switch (this.phase) {
-      case 0: { // entering: travel toward the center, decelerating on approach
-        final double target = 0;
-        final double dist = Math.abs(this.pos - target);
-        final double v = LXUtils.lerp(V_NEAR, V_ENTER,
-          LXUtils.clamp(dist / 0.45, 0, 1));
-        this.pos -= Math.signum(this.pos) * v * dt;
-        if (dist < 0.015) {
-          this.pos = 0;
-          this.phase = 1;
-          this.phaseT = 0;
-        }
-        break;
+    if (this.activeLayer < 0) { // between sets: breathe, then launch the next
+      this.pauseMs -= dt;
+      if (this.pauseMs <= 0) {
+        launchSet();
       }
-      case 1: { // bopping
-        this.phaseT += dt;
-        if (this.phaseT >= BOP_MS) {
-          // freeze this set; launch the next, or hold the finished stack
-          if (this.gen + 1 < MAX_GENS) {
-            ++this.gen;
-            this.phase = 0;
-            this.pos = this.fromTop[this.gen] ? -1.2 : 1.2;
-          } else {
-            this.phase = 2;
-            this.phaseT = 0;
+      return;
+    }
+
+    final int l = this.activeLayer;
+    final int nBars = this.bars.getValuei();
+    boolean allFrozen = true;
+    for (int b = 0; b < nBars; ++b) {
+      switch (this.barPhase[b]) {
+        case 0: { // entering: decelerate on approach, independently
+          if (this.barDelay[b] > 0) {
+            this.barDelay[b] -= dt;
+            allFrozen = false;
+            break;
           }
+          final double dist = Math.abs(this.barPos[b]);
+          final double v = this.barVf[b] * LXUtils.lerp(V_NEAR, V_ENTER,
+            LXUtils.clamp(dist / 0.45, 0, 1));
+          this.barPos[b] -= Math.signum(this.barPos[b]) * v * dt;
+          if (dist < 0.015) {
+            this.barPos[b] = 0;
+            this.barPhase[b] = 1;
+            // momentum carries into the first bounce, past the rest point
+            this.barBounce[b] = 3 + (int) (this.barBopPh[b] * 3);
+            this.barTgt[b] = (this.layerFromTop[l] ? 1 : -1) * bounceAmp(l, b);
+          }
+          allFrozen = false;
+          break;
         }
-        break;
-      }
-      case 2: { // full five-color lock: hold
-        this.phaseT += dt;
-        if (this.phaseT >= HOLD_MS) {
-          this.phase = 3;
-          this.phaseT = 0;
+        case 1: { // bouncing: same velocity model as the entry travel
+          final double dist = Math.abs(this.barTgt[b] - this.barPos[b]);
+          final double v = this.barVf[b] * LXUtils.lerp(V_NEAR, V_ENTER,
+            LXUtils.clamp(dist / 0.45, 0, 1));
+          this.barPos[b] += Math.signum(this.barTgt[b] - this.barPos[b]) * v * dt;
+          if (dist < 0.008) {
+            if (--this.barBounce[b] <= 0) {
+              // ease home and freeze
+              if (Math.abs(this.barPos[b]) < 0.008) {
+                this.barPos[b] = 0;
+                this.barPhase[b] = 2;
+              } else {
+                this.barTgt[b] = 0;
+                this.barBounce[b] = 1;
+              }
+            } else {
+              // reverse, each bounce a little smaller
+              this.barTgt[b] = -Math.signum(this.barTgt[b])
+                * bounceAmp(l, b)
+                * Math.pow(BOUNCE_DECAY, 6 - this.barBounce[b]);
+            }
+          }
+          allFrozen = false;
+          break;
         }
-        break;
       }
-      case 3: { // release: fade, then relayout and go again
-        this.phaseT += dt;
-        if (this.phaseT >= FADE_MS) {
-          layout();
-        }
-        break;
-      }
+    }
+    if (allFrozen) { // set locked; the stack stays — queue the next set
+      ++this.gen;
+      this.activeLayer = -1;
+      this.pauseMs = RELAUNCH_MS;
     }
   }
 
@@ -160,83 +205,66 @@ public class LockedIn extends StrandPattern {
   protected void renderStrands(Apotheneum.Orientation o, double deltaMs, boolean isCube) {
     final int w = o.width();
     final int h = o.height();
-    final double wow = getWow();
     final double hueShift = LXColor.h(getColor());
     final int nBars = this.bars.getValuei();
     final double thickC = Math.max(2, (2.5 + getSize() * 5) * (isCube ? 1.6 : 1.0));
-    final double fadeAll = (this.phase == 3)
-      ? 1.0 - LXUtils.clamp(this.phaseT / FADE_MS, 0, 1) : 1.0;
     final int tq = (int) (this.timeMs / 80);
 
-    // active set's bop offset: bounce that beats can punch harder
-    final double bopA = (this.phase == 1)
-      ? (0.05 + wow * 0.045 + this.bopKick * 0.04 * this.sensitivity.getValue())
-        * Math.sin(2 * Math.PI * this.phaseT / BOP_PERIOD)
-        * (1.0 - 0.35 * LXUtils.clamp(this.phaseT / BOP_MS, 0, 1))
-      : 0;
-
-    for (int g = 0; g <= this.gen && g < MAX_GENS; ++g) {
-      final boolean active = (g == this.gen) && (this.phase <= 1);
+    for (int l = 0; l < MAX_LAYERS; ++l) {
+      if (!this.layerLive[l]) continue;
+      final boolean active = (l == this.activeLayer);
+      final boolean fromTop = this.layerFromTop[l];
       final int col = LXColor.hsb(
-        (float) (((hueShift + HUE_STEPS[g]) % 360) + 360) % 360, 92, 100);
+        (float) (((hueShift + HUE_STEPS[this.layerHue[l]]) % 360) + 360) % 360, 92, 100);
       final int hot = LXColor.lerp(col, LXColor.WHITE, 0.55f);
-      final double genB = (active ? 1.0 : 0.82) * fadeAll;
+      final double genB = active ? 1.0 : 0.82;
 
       for (int b = 0; b < nBars; ++b) {
-        final double xN = this.genX[g][b];
-        final double len = this.genLen[g][b] * this.lenVar[g][b];
-        double yc = this.genYc[g][b];
+        final double xN = this.layX[l][b];
+        final double len = this.layLen[l][b] * this.lenVar[l][b];
+        double yc = this.layYc[l][b];
+        boolean entering = false;
         if (active) {
-          if (this.phase == 0) {
-            yc += this.pos; // still traveling in
-          } else {
-            yc += bopA * (0.8 + 0.4 * hashd(g * 97 + b * 31)); // bopping
+          if (this.barPhase[b] == 0) {
+            if (this.barDelay[b] > 0) continue; // not launched yet
+            yc += this.barPos[b]; // still traveling in
+            entering = true;
+          } else if (this.barPhase[b] == 1) {
+            yc += this.barPos[b]; // bouncing on the entry velocity model
           }
         }
-        final double topF = (yc - len / 2) * (h - 1);
-        final double botF = (yc + len / 2) * (h - 1);
-        if (botF < -1 || topF > h) continue;
+        // solid column anchored to its entry edge, reaching to its lead end:
+        // bottom-entering bars fill floor-to-lead, top-entering sky-to-lead
+        final double leadF = fromTop
+          ? (yc + len / 2) * (h - 1)   // lead end grows downward from the sky
+          : (yc - len / 2) * (h - 1);  // lead end grows upward from the floor
+        if (fromTop ? (leadF < -1) : (leadF > h)) continue;
 
         final int x0 = (int) Math.round(xN * w);
         final int bw = (int) thickC;
-        // white-hot leading edge while traveling
-        final boolean entering = active && this.phase == 0;
-        final double leadY = (this.fromTop[g] ? botF : topF);
+        final double span = fromTop
+          ? Math.max(1, leadF)
+          : Math.max(1, (h - 1) - leadF);
 
         for (int dx = 0; dx < bw; ++dx) {
           final int x = x0 + dx;
-          for (int yy = (int) Math.floor(topF) - 1; yy <= (int) Math.ceil(botF) + 1; ++yy) {
+          final int yStart = fromTop ? 0 : (int) Math.floor(leadF);
+          final int yEnd = fromTop ? (int) Math.ceil(leadF) : h - 1;
+          for (int yy = yStart; yy <= yEnd; ++yy) {
             if (yy < 0 || yy >= h) continue;
-            final double dOut = (yy < topF) ? (topF - yy) : ((yy > botF) ? (yy - botF) : 0);
-            final double cov = LXUtils.clamp(1.0 - dOut, 0, 1);
+            final double dOut = fromTop ? (yy - leadF) : (leadF - yy);
+            final double cov = LXUtils.clamp(1.0 - Math.max(0, dOut), 0, 1);
             if (cov <= 0.02) continue;
+            // brightest at the lead end, easing back toward the anchor edge
+            final double back = Math.abs(yy - leadF) / span;
             int c = col;
-            double bb = genB * cov * (0.80 + 0.20 * hashd(x * 131 + yy * 7 + (active ? tq : 0)));
-            if (entering && Math.abs(yy - leadY) < 1.5) {
+            double bb = genB * cov * (0.55 + 0.45 * Math.pow(1.0 - back, 0.8))
+              * (0.85 + 0.15 * hashd(x * 131 + yy * 7 + (active ? tq : 0)));
+            if (entering && Math.abs(yy - leadF) < 1.5) {
               c = hot;
-              bb = Math.min(1, bb * 1.4);
+              bb = Math.min(1, bb * 1.5);
             }
             addPix(o, x, yy, c, bb);
-          }
-
-          // gradient tail filling all the way back to the bar's entry edge:
-          // bottom-entering bars trail to the floor, top-entering to the sky
-          if (this.fromTop[g]) {
-            final int tailStart = (int) Math.floor(topF) - 1;
-            final double span = Math.max(1, topF);
-            for (int yy = tailStart; yy >= 0; --yy) {
-              final double t2 = (topF - yy) / span;
-              final double tb = genB * (0.10 + 0.45 * Math.pow(1.0 - t2, 1.4));
-              addPix(o, x, yy, col, tb);
-            }
-          } else {
-            final int tailStart = (int) Math.ceil(botF) + 1;
-            final double span = Math.max(1, (h - 1) - botF);
-            for (int yy = tailStart; yy < h; ++yy) {
-              final double t2 = (yy - botF) / span;
-              final double tb = genB * (0.10 + 0.45 * Math.pow(1.0 - t2, 1.4));
-              addPix(o, x, yy, col, tb);
-            }
           }
         }
       }
