@@ -3,7 +3,7 @@
  *
  * Created by patrick piemonte
  *
- * Rain — a heavy downpour of vertical streaks falling through the piece like rain
+ * Bruh — a heavy downpour of vertical streaks falling through the piece like rain
  * in a bamboo forest. Where each drop strikes the floor, water splashes upward in
  * a small arc and falls back. Dense, continuous, elemental.
  *
@@ -22,7 +22,7 @@ import heronarts.lx.parameter.EnumParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class Rain extends ParameterPattern {
+public class Bruh extends ParameterPattern {
 
   public enum Target {
     BOTH,
@@ -42,6 +42,10 @@ public class Rain extends ParameterPattern {
   public final CompoundParameter splash =
     new CompoundParameter("Splash", 0.5, 0, 1)
     .setDescription("How much water splashes up on impact");
+
+  public final CompoundParameter trail =
+    new CompoundParameter("Trail", 0.5, 0, 1)
+    .setDescription("How long the rain streaks trail behind each drop");
 
   public final EnumParameter<Target> target =
     new EnumParameter<Target>("Target", Target.BOTH)
@@ -107,11 +111,12 @@ public class Rain extends ParameterPattern {
   private final Surface cube = new Surface();
   private final Surface cylinder = new Surface();
 
-  public Rain(LX lx) {
+  public Bruh(LX lx) {
     // Base registers color, speed, size; speed = fall speed, size = streak/splash size.
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("drops", this.drops);
     addParameter("splash", this.splash);
+    addParameter("trail", this.trail);
     addParameter("target", this.target);
   }
 
@@ -137,12 +142,15 @@ public class Rain extends ParameterPattern {
     final double speed = Math.max(0.02, getSpeed());
     final double size = getSize();
     final double wow = getWow();
-    final int count = this.drops.getValuei();
-    final double fall = FALL * speed * deltaMs;
-    final double streak = 2 + size * 9;
+    // Wow = downpour surge: more drops falling faster, eruptive splashes
+    final int count = Math.min(MAX_DROPS, (int) (this.drops.getValuei() * (1 + wow * 1.5)));
+    final double fall = FALL * speed * deltaMs * (1 + wow * 0.8);
+    // Trail dial: 0.5 == the original streak length, up to ~3.3x at full
+    final double streak = (2 + size * 9) * (0.7 + this.trail.getValue() * 2.6);
     // Wow makes impacts erupt: many more droplets, more upward energy, whiter foam.
-    final double splashEnergy = this.splash.getValue() + wow;
-    final int splashCount = (int) (1 + splashEnergy * 5 + wow * 10);
+    final double splashAmt = this.splash.getValue();
+    final double splashEnergy = splashAmt + wow;
+    final int splashCount = (int) (1 + splashAmt * 14 + wow * 14);
     final int splashColor = LXColor.lerp(base, LXColor.WHITE, (float) LXUtils.clamp(0.6 + wow * 0.4, 0, 1));
     final int headColor = LXColor.lerp(base, LXColor.WHITE, 0.5f); // hot bead at the drop head
 
@@ -162,7 +170,7 @@ public class Rain extends ParameterPattern {
       for (int k = 0; k <= (int) streak; ++k) {
         int row = head - k;
         if (row < 0 || row >= h) continue;
-        double b = Math.pow(1.0 - (double) k / (streak + 1), 1.8);
+        double b = Math.exp(-2.2 * k / (streak + 1)); // reads along the full trail
         int c = base;
         if (k == 0) {
           b *= (0.4 + 0.6 * hf);
@@ -180,7 +188,7 @@ public class Rain extends ParameterPattern {
     }
 
     // --- splashes ---
-    final double r = 0.7 + size * 0.8 + wow * 1.4;
+    final double r = 0.9 + size * 0.9 + splashAmt * 1.3 + wow * 1.5;
     for (int i = 0; i < MAX_SPLASH; ++i) {
       if (!s.salive[i]) continue;
       s.slife[i] -= deltaMs;
@@ -190,7 +198,7 @@ public class Rain extends ParameterPattern {
       s.sx[i] += s.svx[i] * speed * deltaMs;
       if (s.sy[i] >= h - 1 && s.svy[i] > 0) { s.salive[i] = false; continue; } // fell back
       double fade = s.slife[i] / s.smax[i];
-      splat(o, w, h, s.sx[i], s.sy[i], r, Math.pow(fade, 2), splashColor);
+      splat(o, w, h, s.sx[i], s.sy[i], r, Math.pow(fade, 1.5) * (0.55 + 0.65 * splashAmt + wow * 0.4), splashColor);
     }
   }
 

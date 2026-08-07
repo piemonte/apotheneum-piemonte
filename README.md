@@ -12,6 +12,7 @@ exterior + interior surfaces, 28,512 nodes).
 | Pattern | What it looks like |
 |---|---|
 | **Afterglow** | Joints of light scattered across the surfaces, endlessly exhaling soft white dots outward along rays at arbitrary angles; kicks flare the field, drops send one synchronized wave down every ray |
+| **Bruh** | A heavy downpour of vertical streaks; each drop splashes on the floor line and the water arcs back up before falling again |
 | **CandyFlip** | Rainbow comets with white-hot heads roam the walls, each bursting into a fresh generation of comets — a cascading firework of color until the energy runs out |
 | **ComeUp** | A glass of water filling: a turbulent, foamy waterline rises with sparkles and bubbles beneath, cycling to a new hue with every refill; cube, cylinder, or both |
 | **Cooked** | Thick broken lines of light march down the surfaces in unison, four segments per side; Wow makes them glitch, jitter, and strobe cyan-white |
@@ -33,9 +34,8 @@ exterior + interior surfaces, 28,512 nodes).
 | **PlayaStrobe** | A storm-torn glint band rakes continuously around the room over a faint churning floor; the operator's Strobe button fires pulsating white bursts that decay away |
 | **Pressure** | Discrete curtain panels gate hard on/off to the music while the whole wall slowly orbits the vertical axis — green speckled with red over a warm floor ember that never goes out |
 | **Radiate** | Dotted rays fan up the walls around you with red rings hugging the base (cylinder by default, cube optional); beats bloom brightness from the center outward, quiet collapses into a twinkling starfield |
-| **Rain** | A heavy downpour of vertical streaks; each drop splashes on the floor line and the water arcs back up before falling again |
 | **ReUp** | Every string lit solid; bass hits knock random groups dark and they fade back up — an audio curtain that keeps rebuilding itself |
-| **Replies** | Glowing dots glide the interior rings and columns; when two collide they burst, and the matching exterior surface flickers in reply — the outer chamber answering the inner |
+| **Replies** | Glowing dots glide the cylinder's rings and columns; when two collide they burst, and the cube face looking toward the collision flickers in reply — the outer chamber answering the inner |
 | **SpaceBoundSpecies** | A flight through a starfield, each face a window with its own vanishing point — drifting twinkles with diffraction spikes at rest, hyperspace warp streaks at speed |
 | **SpecialKube** | Spinning wireframe 3D cubes tumble down the panels; the special ones glitch — jittering, flashing cyan-white, and strobing in sync |
 | **Superbloom** | Green pixel-chunk buds swell and blossom into giant top-down flowers in wild colors — six species with alternating petals — spinning to the music before folding away |

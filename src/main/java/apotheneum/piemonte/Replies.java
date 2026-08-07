@@ -3,12 +3,11 @@
  *
  * Created by patrick piemonte
  *
- * Replies — an iteration on Afterglow. Glowing dots glide along the interior
- * sequences (rings or columns), each trailing a soft afterglow. When two dots
- * collide they burst, and the matching exterior surface flickers in reply: a
- * collision on the cube interior flickers the cube exterior, a collision on the
- * cylinder interior flickers the cylinder exterior — the outer chamber answering
- * the inner one (a cube-glow-complements-cylinder geometry complement).
+ * Replies — glowing dots glide along the cylinder's rings or columns, each
+ * trailing a soft afterglow. When two dots collide they burst — and the cube
+ * answers: the face looking toward the collision flickers in reply, the outer
+ * chamber echoing the inner one. Wow chains the bursts into cascades that
+ * ripple around the cylinder and set multiple faces talking at once.
  *
  * Best viewed in deep playa or in the dust.
  */
@@ -51,7 +50,7 @@ public class Replies extends ParameterPattern {
 
   public final EnumParameter<Target> target =
     new EnumParameter<Target>("Target", Target.BOTH)
-    .setDescription("Which structures to render");
+    .setDescription("BOTH = full call-and-response; CYLINDER = dots only; CUBE = replies only");
 
   public final DiscreteParameter density =
     new DiscreteParameter("Density", 3, 2, 9)
@@ -63,12 +62,12 @@ public class Replies extends ParameterPattern {
 
   public final CompoundParameter reply =
     new CompoundParameter("Reply", 0.5, 0, 1)
-    .setDescription("How long the exterior flicker lingers after a burst");
+    .setDescription("How long the cube's flicker lingers after a burst");
 
   // Inherited `color` (from ParameterPattern) is the interior dot color.
   public final LinkedColorParameter exteriorColor =
     new LinkedColorParameter("Outer")
-    .setDescription("Exterior flicker color (the reply)");
+    .setDescription("Cube flicker color (the reply)");
 
   /** Per-structure dot simulation + exterior reply state. */
   private final class Surface {
@@ -109,8 +108,8 @@ public class Replies extends ParameterPattern {
     }
   }
 
-  private final Surface cube = new Surface();
   private final Surface cylinder = new Surface();
+  private final double[] faceEnergy = new double[4]; // per cube face reply
 
   public Replies(LX lx) {
     // Base registers color (interior dots), speed, size; we add the rest.
@@ -137,32 +136,23 @@ public class Replies extends ParameterPattern {
   protected void render(double deltaMs) {
     setColors(LXColor.BLACK);
 
-    // Dots live on the interior; nothing to show without it.
-    if (!Apotheneum.hasInterior) {
-      return;
-    }
-
     final boolean rings = this.axis.getEnum() == Axis.RINGS;
     final int dotsPer = this.density.getValuei();
     final Target t = this.target.getEnum();
-    final int interiorBase = getColor();
-    final int exteriorBase = this.exteriorColor.calcColor();
+    final int dotBase = getColor();
+    final int replyBase = this.exteriorColor.calcColor();
 
-    if (t != Target.CYLINDER) {
-      step(this.cube, Apotheneum.cube.interior, Apotheneum.cube.exterior,
-        rings, dotsPer, deltaMs, interiorBase, exteriorBase);
-    }
-    if (t != Target.CUBE) {
-      step(this.cylinder, Apotheneum.cylinder.interior, Apotheneum.cylinder.exterior,
-        rings, dotsPer, deltaMs, interiorBase, exteriorBase);
-    }
-    // No copyExterior(): interior and exterior render independently.
+    // the show lives on the cylinder; the cube answers
+    step(this.cylinder, Apotheneum.cylinder.exterior, rings, dotsPer, deltaMs,
+      dotBase, replyBase, t);
+    copyCylinderExterior();
   }
 
-  private void step(Surface s, Apotheneum.Orientation interior, Apotheneum.Orientation exterior,
-      boolean rings, int dotsPer, double deltaMs, int interiorBase, int exteriorBase) {
+  private void step(Surface s, Apotheneum.Orientation cyl,
+      boolean rings, int dotsPer, double deltaMs, int interiorBase, int exteriorBase,
+      Target t) {
 
-    final Apotheneum.Sequence[] sequences = rings ? interior.rings() : interior.columns();
+    final Apotheneum.Sequence[] sequences = rings ? cyl.rings() : cyl.columns();
     final int numSeq = sequences.length;
     if (!s.matches(rings, dotsPer, numSeq)) {
       s.init(rings, dotsPer, numSeq);
@@ -181,6 +171,8 @@ public class Replies extends ParameterPattern {
 
     // --- advance + collide ---
     int bursts = 0;
+    final boolean drawDots = (t != Target.CUBE);
+    final boolean doReply = (t != Target.CYLINDER);
     for (int q = 0; q < numSeq; ++q) {
       final int o = q * dotsPer;
       for (int k = 0; k < dotsPer; ++k) {
@@ -204,6 +196,9 @@ public class Replies extends ParameterPattern {
         s.cooldown[q] = COOLDOWN_MS;
         s.flashEnv[q] = 1.0;
         s.flashPos[q] = hitPos;
+        // the cube face looking toward this collision answers
+        final double azimuth = rings ? hitPos : ((double) q / numSeq);
+        this.faceEnergy[((int) Math.floor(azimuth * 4 + 0.5)) % 4] = 1.0;
         // echo: a burst ripples into a neighboring sequence at high Wow
         if (wow > 0.25 && Math.random() < wow * 0.7) {
           final int q2 = (q + 1 + (int) (Math.random() * 3)) % s.flashEnv.length;
@@ -214,17 +209,17 @@ public class Replies extends ParameterPattern {
       }
     }
 
-    // --- exterior reply energy ---
+    // --- reply energy decays per cube face ---
     final double decayMs = LXUtils.lerp(150, 1400, this.reply.getValue());
-    s.energy *= Math.exp(-deltaMs / (0.5 * decayMs));
-    if (s.energy < 0.01) {
-      s.energy = 0;
-    }
-    if (bursts > 0) {
-      s.energy = 1.0;
+    for (int fi = 0; fi < 4; ++fi) {
+      this.faceEnergy[fi] *= Math.exp(-deltaMs / (0.5 * decayMs));
+      if (this.faceEnergy[fi] < 0.01) {
+        this.faceEnergy[fi] = 0;
+      }
     }
 
-    // --- draw interior dots + burst flashes ---
+    // --- draw cylinder dots + burst flashes ---
+    if (drawDots)
     for (int q = 0; q < numSeq; ++q) {
       final int o = q * dotsPer;
       final LXPoint[] points = sequences[q].points;
@@ -257,16 +252,23 @@ public class Replies extends ParameterPattern {
       }
     }
 
-    // --- wash the exterior with the flickering reply ---
+    // --- the cube answers: flickering wash on the faces that were addressed ---
     s.flickerMs += deltaMs;
     if (s.flickerMs > 80) {
       s.flickerMs = 0;
       s.flickerTarget = 0.35 + 0.65 * Math.random();
     }
     s.flickerLp += (s.flickerTarget - s.flickerLp) * Math.min(1.0, deltaMs / 60.0);
-    if (s.energy > 0) {
-      final int c = LXColor.scaleBrightness(exteriorBase, (float) (s.energy * s.flickerLp));
-      setColor(exterior, c);
+    if (doReply) {
+      for (int fi = 0; fi < 4; ++fi) {
+        if (this.faceEnergy[fi] <= 0) continue;
+        final int c = LXColor.scaleBrightness(exteriorBase,
+          (float) (this.faceEnergy[fi] * s.flickerLp));
+        setColor(Apotheneum.cube.exterior.faces[fi], c);
+        if (Apotheneum.hasInterior) {
+          setColor(Apotheneum.cube.interior.faces[fi], c);
+        }
+      }
     }
   }
 }

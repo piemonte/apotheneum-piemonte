@@ -3,12 +3,15 @@
  *
  * Created by patrick piemonte
  *
- * PlayaStrobe — a bright glint rakes around the structure like light sweeping
- * across churning storm water, its edges torn by turbulent noise, over a faint
- * storm-shimmer floor. The operator holds the trigger: hitting the Strobe
- * button fires a hard white pulsating burst that flashes the entire structure
- * and decays away; holding it sustains the storm. Wow deepens the turbulence,
- * widens the glint, and drives the strobe harder.
+ * PlayaStrobe — UFOAbduction stripped to pure white. Blocks of white light
+ * beam up the lanes with the measured velocity signature — fast entry, a
+ * slow-motion crawl through the center, a burst out the top — and as each
+ * block enters the center of its border it strobes briefly, a hard little
+ * flutter before it glides on. Around them, thin white lines spin
+ * horizontally like a cyclone, shearing faster near the top rim as the vortex
+ * slowly climbs. The operator's Strobe button still fires the full-structure
+ * pulsating white burst that decays away after release. Wow feeds the cyclone
+ * and hardens every strobe.
  *
  * Best viewed in deep playa or in the dust.
  */
@@ -21,20 +24,31 @@ import heronarts.lx.LXCategory;
 import heronarts.lx.color.LXColor;
 import heronarts.lx.parameter.BooleanParameter;
 import heronarts.lx.parameter.CompoundParameter;
-import heronarts.lx.parameter.EnumParameter;
+import heronarts.lx.parameter.DiscreteParameter;
 import heronarts.lx.utils.LXUtils;
 
 @LXCategory("Apotheneum/piemonte")
-public class PlayaStrobe extends ParameterPattern {
+public class PlayaStrobe extends StrandPattern {
 
-  public enum Target {
-    BOTH,
-    CUBE,
-    CYLINDER
-  }
-
-  private static final double DECAY_MS = 1500; // strobe burst fade-out
+  private static final int MAX_HEADS = 64;
+  private static final int MAX_LINES = 16;
+  private static final int WHITE_SOFT = LXColor.hsb(210, 6, 100); // barely-cool white
+  // UFOAbduction's measured rise profile
+  private static final double V_ENTRY = 0.00135;
+  private static final double V_STALL = 0.00024;
+  private static final double V_EXIT = 0.0075;
+  private static final double STALL_LO = 0.60;
+  private static final double STALL_HI = 0.44;
+  private static final double EXIT_AT = 0.30;
+  private static final double IDLE_WAVE_MS = 900;
+  private static final double STALL_STROBE_MS = 320; // brief flutter entering the stall
+  private static final double DECAY_MS = 1500;       // button strobe fade-out
   private static final double STROBE_DUTY = 0.45;
+  private static final double CYCLONE_REV_S = 0.30;
+
+  public final DiscreteParameter lanes =
+    new DiscreteParameter("Lanes", 12, 6, 24)
+    .setDescription("Lanes the white blocks beam up");
 
   public final BooleanParameter strobe =
     new BooleanParameter("Strobe", false)
@@ -45,129 +59,192 @@ public class PlayaStrobe extends ParameterPattern {
     new CompoundParameter("Rate", 9, 2, 16)
     .setDescription("Strobe pulse rate in flashes per second");
 
-  public final EnumParameter<Target> target =
-    new EnumParameter<Target>("Target", Target.BOTH)
-    .setDescription("Which structures to render to");
+  private final class Surface {
+    boolean inited;
+    final int[] lane = new int[MAX_HEADS];
+    final double[] y = new double[MAX_HEADS];
+    final double[] vf = new double[MAX_HEADS];      // variance factor
+    final double[] stallMs = new double[MAX_HEADS]; // time spent in the stall band
+    final boolean[] alive = new boolean[MAX_HEADS];
+    void reset() {
+      for (int i = 0; i < MAX_HEADS; ++i) this.alive[i] = false;
+      this.inited = true;
+    }
+    void spawn(int lane) {
+      for (int i = 0; i < MAX_HEADS; ++i) {
+        if (this.alive[i]) continue;
+        this.lane[i] = lane;
+        this.y[i] = 1.02 + Math.random() * 0.10;
+        this.vf[i] = 0.8 + Math.random() * 0.4;
+        this.stallMs[i] = 0;
+        this.alive[i] = true;
+        return;
+      }
+    }
+  }
 
-  private double timeMs = 0;
-  private double phase = 0;
+  private final Surface cube = new Surface();
+  private final Surface cylinder = new Surface();
+  private double waveTimer = 0;
   private double strobeEnv = 0;
+  private double cyclone = 0; // shared spin phase
 
   public PlayaStrobe(LX lx) {
-    // Base registers color (glint tint), speed (sweep rate), size (glint width).
+    // Base registers color (unused: pure white), speed (rise + spin), size (block thickness).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
+    addParameter("lanes", this.lanes);
     addParameter("strobe", this.strobe);
     addParameter("rate", this.rate);
-    addParameter("target", this.target);
+    addTargetParameter();
   }
 
-  private static double frac(double x) {
-    return x - Math.floor(x);
-  }
-
-  private static double hash(int x, int y, int t) {
-    int h = x * 374761393 + y * 668265263 + t * 1274126177;
+  private static double hashd(int n) {
+    int h = n * 374761393;
     h = (h ^ (h >>> 13)) * 1103515245;
     h ^= (h >>> 16);
     return (h & 0x7fffffff) / (double) 0x7fffffff;
   }
 
-  /** Smooth value noise in [0,1]. */
-  private static double vnoise(double x, double y) {
-    int xi = (int) Math.floor(x), yi = (int) Math.floor(y);
-    double fx = x - xi, fy = y - yi;
-    double sx = fx * fx * (3 - 2 * fx), sy = fy * fy * (3 - 2 * fy);
-    double n0 = LXUtils.lerp(hash(xi, yi, 0), hash(xi + 1, yi, 0), sx);
-    double n1 = LXUtils.lerp(hash(xi, yi + 1, 0), hash(xi + 1, yi + 1, 0), sx);
-    return LXUtils.lerp(n0, n1, sy);
-  }
-
-  /** Two-octave ridged turbulence in [0,1] — bright storm veins. */
-  private static double turb(double x, double y) {
-    double n1 = Math.abs(vnoise(x, y) * 2 - 1);
-    double n2 = Math.abs(vnoise(x * 2.1 + 13.7, y * 2.1 + 5.3) * 2 - 1);
-    return 1.0 - (n1 * 0.65 + n2 * 0.35);
+  /** UFOAbduction's rise profile: fast entry, center stall, exit burst. */
+  private static double riseProfile(double y) {
+    if (y > STALL_LO) {
+      final double u = LXUtils.clamp((y - STALL_LO) / 0.10, 0, 1);
+      return LXUtils.lerp(V_STALL, V_ENTRY, u * u * (3 - 2 * u));
+    } else if (y > STALL_HI) {
+      return V_STALL;
+    }
+    final double u = LXUtils.clamp((STALL_HI - y) / (STALL_HI - EXIT_AT), 0, 1);
+    return LXUtils.lerp(V_STALL, V_EXIT, u * u * (3 - 2 * u));
   }
 
   @Override
-  protected void render(double deltaMs) {
-    setColors(LXColor.BLACK);
-    this.timeMs += deltaMs;
-
-    final double speed = Math.max(0.02, getSpeed());
+  protected void advance(double deltaMs) {
+    final double speed = Math.max(0.05, getSpeed());
     final double wow = getWow();
-    this.phase += deltaMs * 0.00009 * speed;
+    this.cyclone += deltaMs * 0.001 * CYCLONE_REV_S * speed * 2 * (1 + wow * 0.5);
+    this.cyclone -= Math.floor(this.cyclone);
 
-    // operator trigger: full while held, then a decaying burst
+    // beat-locked launch waves with an idle cadence fallback
+    this.waveTimer += deltaMs * speed * 2;
+    if ((this.beat && this.beatLevel > 0.15) || this.waveTimer >= IDLE_WAVE_MS) {
+      this.waveTimer = 0;
+      final double strength = LXUtils.clamp(
+        this.levelEnv * 1.6 + this.beatLevel * 0.4 + wow * 0.3, 0.2, 1);
+      launchWave(this.cube, strength);
+      launchWave(this.cylinder, strength);
+    }
+
+    // operator strobe: full while held, decaying burst after release
     if (this.strobe.isOn()) {
       this.strobeEnv = 1;
     } else if (this.strobeEnv > 0) {
       this.strobeEnv = Math.max(0, this.strobeEnv - deltaMs / DECAY_MS);
     }
+  }
 
-    final Target t = this.target.getEnum();
-    if (t != Target.CYLINDER) {
-      sweep(Apotheneum.cube.exterior, wow);
-    }
-    if (t != Target.CUBE) {
-      sweep(Apotheneum.cylinder.exterior, wow);
-    }
-    copyExterior();
-
-    // pulsating white-hot strobe over everything, interior included
-    if (this.strobeEnv > 0) {
-      final double hz = this.rate.getValue() * (1.0 + wow * 0.7);
-      if (frac(this.timeMs * 0.001 * hz) < STROBE_DUTY) {
-        final double env = this.strobeEnv;
-        final int flash = LXColor.scaleBrightness(LXColor.WHITE, (float) (env * env));
-        for (int i = 0; i < this.colors.length; ++i) {
-          this.colors[i] = LXColor.lightest(this.colors[i], flash);
-        }
-      }
+  private void launchWave(Surface s, double strength) {
+    if (!s.inited) s.reset();
+    final int n = this.lanes.getValuei();
+    for (int l = 0; l < n; ++l) {
+      if (hashd(l * 641 + (int) (this.timeMs * 3)) > 0.35 + strength * 0.55) continue;
+      s.spawn(l);
     }
   }
 
-  private void sweep(Apotheneum.Orientation o, double wow) {
+  @Override
+  protected void renderStrands(Apotheneum.Orientation o, double deltaMs, boolean isCube) {
+    final Surface s = isCube ? this.cube : this.cylinder;
+    if (!s.inited) s.reset();
     final int w = o.width();
     final int h = o.height();
-    final int base = getColor();
-    final int hot = LXColor.lerp(base, LXColor.WHITE, 0.75f);
+    final double speed = Math.max(0.05, getSpeed());
+    final double wow = getWow();
+    final int nLanes = this.lanes.getValuei();
+    final double laneW = (double) w / nLanes;
+    final int tq = (int) (this.timeMs / 70);
 
-    final double bandW = w * (0.05 + getSize() * 0.13) * (1.0 + wow * 0.5);
-    final double xc = frac(this.phase) * w;
-    final double nt = this.timeMs * 0.0004;
-    final double floorAmt = 0.05 + wow * 0.09;
-    final double gain = 1.0 + wow * 0.5;
+    // --- white blocks beaming up, fluttering as they enter the center stall ---
+    for (int i = 0; i < MAX_HEADS; ++i) {
+      if (!s.alive[i]) continue;
+      final double yp = s.y[i];
+      final boolean inStall = (yp <= STALL_LO && yp >= STALL_HI);
+      // Wow = slow-motion: the drops decelerate and stretch into long streaks
+      s.y[i] -= s.vf[i] * riseProfile(yp) * speed * 2 * deltaMs * (1.0 - wow * 0.65);
+      if (s.y[i] <= -0.08) { s.alive[i] = false; continue; }
+      if (inStall) {
+        s.stallMs[i] += deltaMs;
+      }
 
-    for (int x = 0; x < w; ++x) {
-      double dx = x - xc;
-      dx -= w * Math.rint(dx / w); // wrapped distance to the glint center
-      final double adx = Math.abs(dx);
+      final double vNorm = LXUtils.clamp(riseProfile(yp) / V_ENTRY, 0, 1.2);
+      final double thickN = LXUtils.lerp(0.10 * (0.6 + getSize() * 0.9), 0.045, Math.min(1, vNorm))
+        * (1.0 + wow * 0.6); // stretched bodies in slow motion
+      final int thick = Math.max(2, (int) Math.round(thickN * h));
+      final double tailN = LXUtils.clamp(vNorm * 0.8 * (1.0 + wow * 2.0), 0.12, 1.6);
+      final int tail = (int) Math.round(tailN * h);
 
-      for (int y = 0; y < h; ++y) {
-        // turbulence in glint-relative coords keeps the noise seam hidden behind the sweep
-        final double tb = turb(dx * 0.30 + nt * 0.6, y * 0.30 - nt);
+      // the brief strobe as the block enters its center stall
+      double gate = 1.0;
+      if (inStall && s.stallMs[i] < STALL_STROBE_MS * (1 + wow * 0.8)) {
+        gate = (((int) (this.timeMs / 45)) & 1) == 0 ? 1.35 : 0.12; // ~11Hz flutter
+      }
 
-        double b = 0;
-        int c = base;
-        // glint band with a storm-torn edge
-        final double dEff = adx + (tb - 0.5) * bandW * 1.1;
-        double u = 1.0 - dEff / bandW;
-        if (u > 0) {
-          u = LXUtils.clamp(u, 0, 1);
-          final double sm = u * u * (3 - 2 * u);
-          b = Math.pow(sm, 1.6) * (0.45 + 0.75 * tb) * gain;
-          c = (sm > 0.92) ? LXColor.WHITE : ((sm > 0.7) ? hot : base);
+      final int x0 = (int) (s.lane[i] * laneW);
+      final int x1 = Math.min(w - 1, (int) ((s.lane[i] + 1) * laneW) - 2);
+      final double leadF = LXUtils.clamp(s.y[i], -0.1, 1.1) * (h - 1);
+      final double trailF = leadF + (thick - 1);
+      for (int x = x0; x <= x1; ++x) {
+        for (int yy = (int) Math.floor(leadF) - 1; yy <= (int) Math.ceil(trailF) + 1; ++yy) {
+          if (yy < 0 || yy >= h) continue;
+          final double dOut = (yy < leadF) ? (leadF - yy) : ((yy > trailF) ? (yy - trailF) : 0);
+          final double cov = LXUtils.clamp(1.0 - dOut, 0, 1);
+          if (cov <= 0.02) continue;
+          final double u = LXUtils.clamp(1.0 - (yy - leadF) / Math.max(1, thick), 0, 1);
+          addPix(o, x, yy, (u > 0.5) ? LXColor.WHITE : WHITE_SOFT,
+            gate * (0.55 + 0.45 * u) * cov);
         }
-        // faint storm-shimmer floor everywhere else
-        final double fl = floorAmt * tb * tb;
-        if (fl > b) {
-          b = fl;
-          c = base;
+        // tail streams below the block
+        for (int k = 1; k <= tail; ++k) {
+          final int yy = (int) Math.round(trailF) + k;
+          if (yy >= h) break;
+          final double fFall = Math.exp(-2.0 * k / tail);
+          if (fFall < 0.02) break;
+          addPix(o, x, yy, WHITE_SOFT, gate * fFall * 0.7);
         }
-        if (b <= 0.004) continue;
-        final int idx = o.point(x, y).index;
-        this.colors[idx] = LXColor.scaleBrightness(c, (float) LXUtils.clamp(b, 0, 1));
+      }
+    }
+
+    // --- the cyclone: thin white lines shearing around the canvas ---
+    final int nLines = 8 + (int) Math.round(wow * (MAX_LINES - 8));
+    final double rise = (this.timeMs * 0.00002 * speed) % 1.0;
+    for (int i = 0; i < nLines; ++i) {
+      final double band = hashd(i * 53 + 11); // 0 = top .. 1 = lower
+      final double segLen = 0.18 + 0.22 * hashd(i * 97 + 3);
+      // higher lines spin faster: cyclone shear
+      final double spin = this.cyclone * (1.0 + (1.0 - band) * 1.2) + hashd(i * 31 + 7);
+      final double xc = (spin - Math.floor(spin)) * w;
+      final int x0 = (int) Math.floor(xc);
+      final double xf = xc - x0;
+      final int yTop = (int) ((((band * 0.55 - rise * 0.3) % 1.0) + 1.0) % 1.0 * h);
+      final int yBot = Math.min(h - 1, yTop + (int) (segLen * h));
+      for (int yy = yTop; yy <= yBot; ++yy) {
+        final double tw = 0.55 + 0.45 * hashd(i * 977 + yy * 131 + tq * 3);
+        addPix(o, x0, yy, WHITE_SOFT, 0.8 * tw * (1 - xf));
+        addPix(o, x0 + 1, yy, WHITE_SOFT, 0.8 * tw * xf);
+      }
+    }
+
+    // --- operator strobe: full-structure pulsating burst (original behavior) ---
+    if (this.strobeEnv > 0) {
+      final double hz = this.rate.getValue() * (1.0 + wow * 0.7);
+      if ((this.timeMs * 0.001 * hz) % 1.0 < STROBE_DUTY) {
+        final int flash = LXColor.scaleBrightness(LXColor.WHITE,
+          (float) (this.strobeEnv * this.strobeEnv));
+        for (int x = 0; x < w; ++x) {
+          for (int y = 0; y < h; ++y) {
+            final int idx = o.point(x, y).index;
+            this.colors[idx] = LXColor.lightest(this.colors[idx], flash);
+          }
+        }
       }
     }
   }

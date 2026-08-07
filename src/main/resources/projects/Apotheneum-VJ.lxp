@@ -4236,7 +4236,7 @@
               },
               {
                 "id": 9842380,
-                "class": "apotheneum.piemonte.Rain"
+                "class": "apotheneum.piemonte.Bruh"
               },
               {
                 "id": 9842381,
@@ -4442,7 +4442,7 @@
               },
               {
                 "id": 9842451,
-                "class": "apotheneum.piemonte.Rain"
+                "class": "apotheneum.piemonte.Bruh"
               },
               {
                 "id": 9842452,
@@ -4648,7 +4648,7 @@
               },
               {
                 "id": 9842519,
-                "class": "apotheneum.piemonte.Rain"
+                "class": "apotheneum.piemonte.Bruh"
               },
               {
                 "id": 9842520,
@@ -4854,7 +4854,7 @@
               },
               {
                 "id": 9842590,
-                "class": "apotheneum.piemonte.Rain"
+                "class": "apotheneum.piemonte.Bruh"
               },
               {
                 "id": 9842591,
@@ -5060,7 +5060,7 @@
               },
               {
                 "id": 9844740,
-                "class": "apotheneum.piemonte.Rain"
+                "class": "apotheneum.piemonte.Bruh"
               },
               {
                 "id": 9844741,
@@ -5266,7 +5266,7 @@
               },
               {
                 "id": 9844779,
-                "class": "apotheneum.piemonte.Rain"
+                "class": "apotheneum.piemonte.Bruh"
               },
               {
                 "id": 9844780,
@@ -6541,172 +6541,9 @@
           "label": "Modulation"
         },
         "children": {},
-        "modulators": [
-          {
-            "id": 11188,
-            "class": "heronarts.lx.modulator.Interval",
-            "internal": {
-              "modulationColor": 1,
-              "modulationControlsExpanded": true,
-              "modulationsExpanded": true
-            },
-            "parameters": {
-              "label": "Sparkle Timer",
-              "running": true,
-              "trigger": false,
-              "reset": false,
-              "midiSource/index": 0,
-              "midiFilter/enabled": true,
-              "midiFilter/channel": 16,
-              "midiFilter/channel/name": "OMNI",
-              "midiFilter/minNote": 0,
-              "midiFilter/noteRange": 128,
-              "midiFilter/minVelocity": 1,
-              "midiFilter/velocityRange": 127,
-              "loop": true,
-              "tempoSync": false,
-              "tempoMultiplier": 4,
-              "tempoMultiplier/name": "QUARTER",
-              "tempoLock": true,
-              "periodMs": 39251.66474413373,
-              "randomMs": 11666.555638369913,
-              "chance": 70.80859367270023,
-              "triggerOut": false
-            },
-            "children": {},
-            "basis": 0.4849368901645189
-          },
-          {
-            "id": 11190,
-            "class": "heronarts.lx.modulator.MultiModeEnvelope",
-            "internal": {
-              "modulationColor": 3,
-              "modulationControlsExpanded": true,
-              "modulationsExpanded": true
-            },
-            "parameters": {
-              "label": "Sparkle Env",
-              "running": true,
-              "trigger": false,
-              "reset": false,
-              "midiSource/index": 0,
-              "midiFilter/enabled": true,
-              "midiFilter/channel": 16,
-              "midiFilter/channel/name": "OMNI",
-              "midiFilter/minNote": 0,
-              "midiFilter/noteRange": 128,
-              "midiFilter/minVelocity": 1,
-              "midiFilter/velocityRange": 127,
-              "engage": false,
-              "retrig": false,
-              "stageMode": 3,
-              "stageMode/name": "AD",
-              "resetMode": false,
-              "oneshot": true,
-              "initial": 0.0,
-              "peak": 1.0,
-              "delay": 0.0,
-              "attack": 2530.3238358027684,
-              "hold": 0.0,
-              "decay": 5000.0,
-              "sustain": 1.0,
-              "release": 1000.0,
-              "shape": 0.0,
-              "manualTrigger": false,
-              "targetTrigger": false,
-              "midiVelocityResponse": 25.0,
-              "midiNoteResponse": 0.0,
-              "midiLegato": false
-            },
-            "children": {}
-          }
-        ],
-        "modulations": [
-          {
-            "source": {
-              "id": 11190,
-              "path": "/modulation/modulator/2"
-            },
-            "target": {
-              "componentId": 2595,
-              "parameterPath": "fader",
-              "path": "/mixer/channel/4/fader"
-            },
-            "id": 11192,
-            "class": "heronarts.lx.modulation.LXCompoundModulation",
-            "internal": {
-              "modulationColor": 0,
-              "modulationControlsExpanded": true,
-              "modulationsExpanded": true
-            },
-            "parameters": {
-              "label": "LX",
-              "enabled": true,
-              "polarity": 0,
-              "polarity/name": "UNIPOLAR",
-              "range": 0.6444196393131278
-            },
-            "children": {}
-          },
-          {
-            "source": {
-              "id": 11190,
-              "path": "/modulation/modulator/2"
-            },
-            "target": {
-              "componentId": 2614,
-              "parameterPath": "speed",
-              "path": "/mixer/channel/4/pattern/1/speed"
-            },
-            "id": 11210,
-            "class": "heronarts.lx.modulation.LXCompoundModulation",
-            "internal": {
-              "modulationColor": 0,
-              "modulationControlsExpanded": true,
-              "modulationsExpanded": true
-            },
-            "parameters": {
-              "label": "LX",
-              "enabled": true,
-              "polarity": 0,
-              "polarity/name": "UNIPOLAR",
-              "range": 0.7689732152502984
-            },
-            "children": {}
-          }
-        ],
-        "triggers": [
-          {
-            "source": {
-              "componentId": 11188,
-              "parameterPath": "triggerOut",
-              "path": "/modulation/modulator/1/triggerOut"
-            },
-            "target": {
-              "componentId": 11190,
-              "parameterPath": "targetTrigger",
-              "path": "/modulation/modulator/2/targetTrigger"
-            },
-            "id": 11191,
-            "class": "heronarts.lx.modulation.LXTriggerModulation",
-            "internal": {
-              "modulationColor": 0,
-              "modulationControlsExpanded": true,
-              "modulationsExpanded": true
-            },
-            "parameters": {
-              "label": "LX",
-              "enabled": true,
-              "toggleMode": 0,
-              "toggleMode/name": "DIRECT",
-              "momentaryToggleMode": 0,
-              "momentaryToggleMode/name": "TOGGLE",
-              "toggleMomentaryMode": 0,
-              "toggleMomentaryMode/name": "ON"
-            },
-            "children": {}
-          }
-        ]
+        "modulators": [],
+        "modulations": [],
+        "triggers": []
       },
       "output": {
         "id": 99,
