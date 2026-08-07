@@ -7,7 +7,7 @@ exterior + interior surfaces, 28,512 nodes).
 
 ## Contents
 
-33 patterns under `apotheneum.piemonte`:
+32 patterns under `apotheneum.piemonte`:
 
 | Pattern | What it looks like |
 |---|---|
@@ -15,7 +15,7 @@ exterior + interior surfaces, 28,512 nodes).
 | **Bruh** | A heavy downpour of vertical streaks; each drop splashes on the floor line and the water arcs back up before falling again |
 | **CandyFlip** | Rainbow comets with white-hot heads roam the walls, each bursting into a fresh generation of comets — a cascading firework of color until the energy runs out |
 | **ComeUp** | A glass of water filling: a turbulent, foamy waterline rises with sparkles and bubbles beneath, cycling to a new hue with every refill; cube, cylinder, or both |
-| **Cooked** | Thick broken lines of light march down the surfaces in unison, four segments per side; Wow makes them glitch, jitter, and strobe cyan-white |
+| **Cooked** | Snake, the whole arcade at once: dozens of glowing snakes carve right-angle paths across the surfaces; run into another's tail and you glitch out — strobing cyan-white — while a fresh snake hatches elsewhere |
 | **Cope** | Thick bars of light on the structure's vertical edges breathe with the music; bass drops erupt into radial shock rings that bloom across the surfaces |
 | **Crush** | Segmented beams spiral down like a zoetrope drum and stack into a gradient; once full, new gradients pour down behind a churning surface line, then teardown slits empty the canvas and the build loops — with a strobe that fires only above the surface |
 | **Destination** | A blazing point at the center of each face throws flickering radial streaks with per-ray hues; a strobe button pulses cyan-white glitch shockrings outward from the star |
@@ -24,9 +24,9 @@ exterior + interior surfaces, 28,512 nodes).
 | **Downlink** | Emerald matrix-rain and red data-bars persist over a room flood that snaps green↔red through amber, above a warm console ring and glittering green floor puddles |
 | **Drip** | Standing beaded strands hang rim to floor, scintillating downward and curling into floor hooks; beats advance the scene journey and hard drops leap it to a random scene — green, red, blue, gold, white, blackout |
 | **FeelSomething** | Bold glowing rods rain down, bounce and tumble, spraying vivid white-hot sparks that cool to color as they arc |
-| **Ghosted** | Dotted red bars with hot amber cores orbit the fixture like slits in a zoetrope drum; Wow steps the spin into glitchy beat-locked jumps |
+| **Ghosted** | Dotted comet lines fire floor-to-sky in a radar sweep marching clockwise around the structure — red-hot floor, white shockwave band, azure sky — breathing in build/climax/blackout swells |
 | **Liftoff** | Fuses climb every vertical string and burst in bright flashes, ember trails lingering; kicks detonate on the beat and drops launch a multi-rocket volley |
-| **Likes** | Green circuit traces ignite on bass, pitch, or random hits — right-angle paths drawing themselves in, dashed and twinkling with white-hot junctions, eroding away dot by dot |
+| **Likes** | Purple circuit traces ignite on bass, pitch, random hits, or the Fire button — right-angle paths drawing themselves in and eroding dot by dot; Wow glitches the dots between white and purple |
 | **Origami** | A sheet ruled with drifting diagonal lines folds on the beat (or the button): flaps sweep over with a white crease flash, each fold revealing a new color layer |
 | **Overclock** | A dense fixed strand curtain shimmers downward into a bright floor pool while a circuit maze re-routes at the hang line; the room breathes emerald↔azure through near-black |
 | **Overflow** | A segmented band of red/green equalizer blocks hangs mid-wall, reconfiguring like letterforms, pulsing with the beat, pooling on the floor, and flooding the room green on drops |
@@ -43,7 +43,6 @@ exterior + interior surfaces, 28,512 nodes).
 | **TunnelVision** | Vertical tunnels of glowing hoops climb the walls ring by ring on every bass hit, hold, then collapse — more and taller tunnels the louder it gets |
 | **UFOAbduction** | Chunky green blocks beam upward with long gradient tails — zooming in, passing through the center in slow motion, then bursting out the top — while thin red beams pulse down through them |
 | **WYD** | A field of fine flowing waveform lines ripples like silk in wind, crests glowing bright over complementary-tinted shadow, streaming seamlessly around the sculpture |
-| **Whiteout** | Wide silver waterfalls: a white-hot emitter band at the top feeds dense scintillating rain that dissolves toward a dark floor, split by thin dark seams |
 
 Also in the package:
 

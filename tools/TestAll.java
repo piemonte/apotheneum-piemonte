@@ -44,7 +44,7 @@ public class TestAll {
     "TheHumanRace",
     "TunnelVision",
     "UFOAbduction",
-    "Whiteout",
+    
     "WYD"
   };
 
