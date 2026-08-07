@@ -20,6 +20,7 @@ public class TestAll {
     "Cope",
     "CrashingOut",
     "Crush",
+    "SafteyThird",
     "Destination",
     "Diabolical",
     "Digits",

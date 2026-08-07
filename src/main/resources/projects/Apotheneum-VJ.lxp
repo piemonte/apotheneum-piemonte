@@ -4305,6 +4305,10 @@
               {
                 "id": 9848812,
                 "class": "apotheneum.piemonte.CrashingOut"
+              },
+              {
+                "id": 9849818,
+                "class": "apotheneum.piemonte.SafteyThird"
               }
             ]
           },
@@ -4523,6 +4527,10 @@
               {
                 "id": 9848813,
                 "class": "apotheneum.piemonte.CrashingOut"
+              },
+              {
+                "id": 9849819,
+                "class": "apotheneum.piemonte.SafteyThird"
               }
             ]
           },
@@ -4741,6 +4749,10 @@
               {
                 "id": 9848814,
                 "class": "apotheneum.piemonte.CrashingOut"
+              },
+              {
+                "id": 9849820,
+                "class": "apotheneum.piemonte.SafteyThird"
               }
             ]
           },
@@ -4959,6 +4971,10 @@
               {
                 "id": 9848815,
                 "class": "apotheneum.piemonte.CrashingOut"
+              },
+              {
+                "id": 9849821,
+                "class": "apotheneum.piemonte.SafteyThird"
               }
             ]
           },
@@ -5177,6 +5193,10 @@
               {
                 "id": 9848816,
                 "class": "apotheneum.piemonte.CrashingOut"
+              },
+              {
+                "id": 9849822,
+                "class": "apotheneum.piemonte.SafteyThird"
               }
             ]
           },
@@ -5395,6 +5415,10 @@
               {
                 "id": 9848817,
                 "class": "apotheneum.piemonte.CrashingOut"
+              },
+              {
+                "id": 9849823,
+                "class": "apotheneum.piemonte.SafteyThird"
               }
             ]
           },

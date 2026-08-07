@@ -7,7 +7,7 @@ exterior + interior surfaces, 28,512 nodes).
 
 ## Contents
 
-36 patterns under `apotheneum.piemonte`:
+37 patterns under `apotheneum.piemonte`:
 
 | Pattern | What it looks like |
 |---|---|
@@ -19,6 +19,7 @@ exterior + interior surfaces, 28,512 nodes).
 | **Cope** | Thick bars of light on the structure's vertical edges breathe with the music; bass drops erupt into radial shock rings that bloom across the surfaces |
 | **CrashingOut** | LockedIn's restless sibling: bars beam in, bounce, lock — then crash back out in reverse off their entry edge before the next color set enters from the opposite side |
 | **Crush** | Segmented beams spiral down like a zoetrope drum and stack into a gradient; once full, new gradients pour down behind a churning surface line, then teardown slits empty the canvas and the build loops — with a strobe that fires only above the surface |
+| **SafteyThird** | A bold dead smiley per facade — bright shimmer-banded disc, X X eyes cut dark into the glow, wide smile arc, gentle head tilt; Wow flashes the eyes red, jitters the face, and drops strobe frames |
 | **Destination** | A blazing point at the center of each face throws flickering radial streaks with per-ray hues; a strobe button pulses cyan-white glitch shockrings outward from the star |
 | **Diabolical** | Thick concentric diamond bands spiral out from center in a shifting rainbow, each band whitening along its spine; Wow ripples the field like a flag |
 | **Digits** | A terminal readout of white-hot characters (Size scales small ticker to giant wall) over a churning blue log-field — some digits pop in, others slide in from the edges or drift through with a slow-motion center stall |
