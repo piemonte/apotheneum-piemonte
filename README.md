@@ -7,7 +7,7 @@ exterior + interior surfaces, 28,512 nodes).
 
 ## Contents
 
-33 patterns under `apotheneum.piemonte`:
+34 patterns under `apotheneum.piemonte`:
 
 | Pattern | What it looks like |
 |---|---|
@@ -39,6 +39,7 @@ exterior + interior surfaces, 28,512 nodes).
 | **Replies** | Glowing dots glide the cylinder's rings and columns; when two collide they burst, and the cube face looking toward the collision flickers in reply — the outer chamber answering the inner |
 | **SpaceBoundSpecies** | A flight through a starfield, each face a window with its own vanishing point — drifting twinkles with diffraction spikes at rest, hyperspace warp streaks at speed |
 | **SpecialKube** | Spinning wireframe 3D cubes tumble down the panels; the special ones glitch — jittering, flashing cyan-white, and strobing in sync |
+| **Sunrise** | A sun rises from the bottom of each facade, white-hot core and orange halo, radiating thick yellow and white angled beams that multiply the higher it climbs before the day turns and it sets |
 | **Superbloom** | Green pixel-chunk buds swell and blossom into giant top-down flowers in wild colors — six species with alternating petals — spinning to the music before folding away |
 | **TheHumanRace** | A vast landscape of little glowing stick figures stretching to the horizon, wrapped 360° around you, swaying as a slow camera drifts across the crowd |
 | **TunnelVision** | Vertical tunnels of glowing hoops climb the walls ring by ring on every bass hit, hold, then collapse — more and taller tunnels the louder it gets |

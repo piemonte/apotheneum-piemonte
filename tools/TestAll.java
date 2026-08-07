@@ -41,6 +41,7 @@ public class TestAll {
     "ReUp",
     "SpaceBoundSpecies",
     "SpecialKube",
+    "Sunrise",
     "Superbloom",
     "TheHumanRace",
     "TunnelVision",
