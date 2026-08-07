@@ -236,6 +236,27 @@ public class SpaceBoundSpecies extends ParameterPattern {
           edge(p, sxp, syp, ex, ey, col, b, bloomR);
         }
       }
+
+      // Wow: orange particles materialize among the stars, glitching and
+      // flickering — more of them the higher the dial
+      if (wow > 0.05) {
+        final int nGlitch = (int) Math.round(wow * 26);
+        final int gq = (int) (this.timeMs / 60); // fast flicker quantum
+        final int orange = LXColor.hsb(28, 95, 100);
+        final int orangeHot = LXColor.lerp(orange, LXColor.WHITE, 0.5f);
+        for (int gi = 0; gi < nGlitch; ++gi) {
+          // ~55% duty flicker, re-rolled per quantum -> hard glitch blink
+          final double gate = hashd(gi * 977 + gq * 131);
+          if (gate > 0.55) continue;
+          final double gx = hashd(gi * 31 + 7) * p.w
+            + (hashd(gi * 61 + gq * 17) - 0.5) * 2.5; // positional jitter
+          final double gy = hashd(gi * 53 + 11) * p.h
+            + (hashd(gi * 43 + gq * 23) - 0.5) * 2.0;
+          final double gb = (0.4 + 0.6 * hashd(gi * 97 + gq * 7)) * wow;
+          splat(p, gx, gy, 0.9 + wow * 0.6, gb,
+            (gate < 0.12) ? orangeHot : orange);
+        }
+      }
     }
 
     copyExterior();
@@ -250,6 +271,13 @@ public class SpaceBoundSpecies extends ParameterPattern {
       double t = (double) k / steps;
       splat(p, x0 + dx * t, y0 + dy * t, r, bright, color);
     }
+  }
+
+  private static double hashd(int n) {
+    int h = n * 374761393;
+    h = (h ^ (h >>> 13)) * 1103515245;
+    h ^= (h >>> 16);
+    return (h & 0x7fffffff) / (double) 0x7fffffff;
   }
 
   private void splat(Panel p, double x, double y, double r, double bright, int color) {

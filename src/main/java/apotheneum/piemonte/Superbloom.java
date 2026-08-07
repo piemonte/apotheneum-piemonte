@@ -315,10 +315,19 @@ public class Superbloom extends ParameterPattern {
     final double pulseBright = 1.0 + pulse * 0.45;
     final int centerCol = LXColor.hsb(48, 70, 100); // golden stamen
 
-    final int y0 = (int) Math.max(0, Math.floor(this.fy[i] - R - 1));
-    final int y1 = (int) Math.min(p.h - 1, Math.ceil(this.fy[i] + R + 1));
-    final int x0 = (int) Math.floor(this.fx[i] - R - 1);
-    final int x1 = (int) Math.ceil(this.fx[i] + R + 1);
+    // Wow: continued blooming — once open, an extra ring of large petals keeps
+    // growing outward through the bloom hold, reaching further the higher the dial
+    final double holdT = LXUtils.clamp(
+      (age - BUD_MS - UNFURL_MS) / Math.max(1.0, this.flife[i]), 0, 1);
+    final double expand = (wow > 0.05 && open >= 1)
+      ? smooth(LXUtils.clamp(holdT * (1.2 + wow * 1.4), 0, 1)) * wow : 0;
+    final double Rx = R * (1.0 + 0.85 * expand); // expanded reach
+    final double petalLen2 = Rx;
+
+    final int y0 = (int) Math.max(0, Math.floor(this.fy[i] - Rx - 1));
+    final int y1 = (int) Math.min(p.h - 1, Math.ceil(this.fy[i] + Rx + 1));
+    final int x0 = (int) Math.floor(this.fx[i] - Rx - 1);
+    final int x1 = (int) Math.ceil(this.fx[i] + Rx + 1);
 
     for (int yy = y0; yy <= y1; ++yy) {
       final double dy = yy - this.fy[i];
@@ -344,8 +353,22 @@ public class Superbloom extends ParameterPattern {
           }
         } else {
           final double d = Math.sqrt(dx * dx + dy * dy);
-          if (d <= R + 1) {
+          if (d <= Rx + 1) {
             final double theta = Math.atan2(dy, dx) - rot;
+            // continued-bloom ring: large petals growing outward past the flower
+            if (expand > 0.02 && d > R * 0.82) {
+              final double aX = (theta + Math.PI / petals) * petals * 0.5;
+              final double prX = Math.pow(Math.abs(Math.cos(aX)), sharp * 0.7);
+              final double edgeX = petalLen2 * (cmin + (1 - cmin) * prX);
+              if (d < edgeX) {
+                final int pidxX = (int) Math.floor((theta + Math.PI / petals) / (TAU / petals) + 0.5);
+                final int ciX = (((pidxX + 2) % nc) + nc) % nc;
+                final double uX = 1 - (d - R * 0.82) / Math.max(1e-3, edgeX - R * 0.82);
+                c = LXColor.hsb((flowerHue + (float) hues[ciX]) % 360,
+                  (float) (78 - 18 * uX), 100);
+                b = (0.30 + 0.55 * smooth(uX)) * pulseBright * expand;
+              }
+            }
             // outer petal ring
             double a = theta * petals * 0.5;
             final double pr = Math.pow(Math.abs(Math.cos(a)), sharp);

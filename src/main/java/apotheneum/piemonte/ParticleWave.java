@@ -19,6 +19,7 @@ import apotheneum.Apotheneum;
 import heronarts.lx.LX;
 import heronarts.lx.LXCategory;
 import heronarts.lx.color.LXColor;
+import heronarts.lx.parameter.BooleanParameter;
 import heronarts.lx.parameter.CompoundParameter;
 import heronarts.lx.parameter.EnumParameter;
 import heronarts.lx.utils.LXUtils;
@@ -42,6 +43,11 @@ public class ParticleWave extends ParameterPattern {
   public final CompoundParameter density =
     new CompoundParameter("Density", 0.65, 0.2, 1)
     .setDescription("Grain density of the particle sea");
+
+  public final BooleanParameter strobe =
+    new BooleanParameter("Strobe", false)
+    .setMode(BooleanParameter.Mode.MOMENTARY)
+    .setDescription("Light tiny dark-purple particles in the negative space while held");
 
   public final EnumParameter<Target> target =
     new EnumParameter<Target>("Target", Target.BOTH)
@@ -75,11 +81,17 @@ public class ParticleWave extends ParameterPattern {
   private final Surface cylinder = new Surface();
   private double timeMs = 0;
   private double phase = 0;
+  // audio: dynamic grain scaling rides the level and the beat
+  private double bassAvg, prevBass, sinceBeatMs = 1e9;
+  private double levelEnv = 0;
+  private double beatPulse = 0;
+  private double strobeEnv = 0;
 
   public ParticleWave(LX lx) {
     // Base registers color (grain tint), speed (roll rate), size (band thickness).
     super(lx, 0.5, 0, 1, 0.5, 0, 1);
     addParameter("density", this.density);
+    addParameter("strobe", this.strobe);
     addParameter("target", this.target);
   }
 
@@ -99,6 +111,31 @@ public class ParticleWave extends ParameterPattern {
     final double wow = getWow();
     // the swell rolls around the structure; storms roll faster
     this.phase += deltaMs * 0.00035 * speed * (1.0 + wow * 0.9);
+
+    // audio envelopes for the dynamically scaling grains
+    heronarts.lx.audio.GraphicMeter m = this.lx.engine.audio.meter;
+    final int nb = Math.max(1, m.numBands);
+    final double bass = m.getAveragef(0, Math.max(1, nb / 4));
+    this.bassAvg += (bass - this.bassAvg) * (1 - Math.exp(-deltaMs / 400.0));
+    this.sinceBeatMs += deltaMs;
+    if (bass > this.bassAvg * 1.35 && bass > this.prevBass
+        && this.sinceBeatMs >= 140 && bass > 0.01) {
+      this.sinceBeatMs = 0;
+      this.beatPulse = 1;
+    }
+    this.prevBass = bass;
+    this.beatPulse *= Math.exp(-deltaMs / 220.0);
+    final double level = m.getAveragef(0, nb);
+    final double alpha = (level > this.levelEnv)
+      ? 1 - Math.exp(-deltaMs / 25.0) : 1 - Math.exp(-deltaMs / 220.0);
+    this.levelEnv += (level - this.levelEnv) * alpha;
+
+    // strobe: full while held, quick decay after release
+    if (this.strobe.isOn()) {
+      this.strobeEnv = 1;
+    } else if (this.strobeEnv > 0) {
+      this.strobeEnv = Math.max(0, this.strobeEnv - deltaMs / 400.0);
+    }
 
     final Target t = this.target.getEnum();
     if (t != Target.CYLINDER) {
@@ -169,6 +206,17 @@ public class ParticleWave extends ParameterPattern {
           final double edge = LXUtils.clamp(-d / 3.0, 0, 1);
           b *= 0.55 + 0.45 * edge;
         } else {
+          // strobe: tiny dark-purple particles fill the negative space
+          if (this.strobeEnv > 0.02 && ((int) (this.timeMs / 90) & 1) == 0) {
+            final double sp = hash(x, y, tq + 7717);
+            if (sp < 0.14) {
+              final int purple = LXColor.hsb(275, 92, 48);
+              final int idx2 = o.point(x, y).index;
+              this.colors[idx2] = LXColor.lightest(this.colors[idx2],
+                LXColor.scaleBrightness(purple,
+                  (float) (this.strobeEnv * (0.5 + 0.5 * (sp / 0.14)))));
+            }
+          }
           // the void: sparse, spatially-stable stars with a slow twinkle
           final double rs = hash(x, y, 0);
           if (rs >= STAR_DENSITY) continue;
@@ -190,6 +238,44 @@ public class ParticleWave extends ParameterPattern {
         if (b <= 0) continue;
         final int idx = o.point(x, y).index;
         this.colors[idx] = LXColor.scaleBrightness(c, (float) LXUtils.clamp(b, 0, 1));
+      }
+    }
+
+    // --- hero grains: discrete particles riding the swell, scaling with the music ---
+    final int nHero = 20;
+    for (int i = 0; i < nHero; ++i) {
+      final int gx = (int) (hash(i * 61 + 13, 5, 0) * w);
+      final double gu01 = (double) gx / w;
+      // sample the band center at this column (same math as the pixel loop)
+      final int gseg = Math.min(3, (int) (gx / segW));
+      final double gsu = gx / segW - gseg;
+      final double gse = gsu * gsu * (3 - 2 * gsu);
+      final double gc0 = Math.sin(rt + gseg * 1.9);
+      final double gc1 = Math.sin(rt + ((gseg + 1) % 4) * 1.9);
+      final double gRock = rockAmp * LXUtils.lerp(gc0, gc1, gse);
+      final double gyc = h * (0.5 + drift) + gRock + amp * (
+          0.60 * Math.sin(TAU * (gu01 * 2 - ph))
+        + 0.25 * Math.sin(TAU * (gu01 * 5 + ph * 1.7))
+        + 0.15 * Math.sin(TAU * (gu01 * 9 - ph * 2.3)));
+      final double gth = thick * (0.75 + 0.25 * Math.sin(TAU * (gu01 * 3 + ph * 0.8)));
+      final double gy = gyc + (hash(i * 89 + 7, 9, 0) * 2 - 1) * gth * 0.7;
+      // the music scales them: level swells all, beats pop a shifting subset
+      final double gr = (0.7 + hash(i * 37 + 3, 2, 0) * 0.9)
+        * (1.0 + this.levelEnv * 1.8 + this.beatPulse * 2.2 * hash(i * 53 + 1, (int) (this.timeMs / 500), 0));
+      final double gb = 0.45 + 0.55 * this.levelEnv + this.beatPulse * 0.3;
+      final int gcol = (hash(i * 71 + 9, 4, 0) > 0.7) ? LXColor.WHITE : glint;
+      final int y0g = (int) Math.max(0, Math.floor(gy - gr));
+      final int y1g = (int) Math.min(h - 1, Math.ceil(gy + gr));
+      for (int yy = y0g; yy <= y1g; ++yy) {
+        for (int xx = (int) Math.floor(gx - gr); xx <= (int) Math.ceil(gx + gr); ++xx) {
+          final double dd = Math.hypot(xx - gx, yy - gy);
+          if (dd > gr) continue;
+          final double uG = 1.0 - dd / (gr + 0.5);
+          final int xig = ((xx % w) + w) % w;
+          final int idx3 = o.point(xig, yy).index;
+          this.colors[idx3] = LXColor.lightest(this.colors[idx3],
+            LXColor.scaleBrightness(gcol, (float) LXUtils.clamp(uG * uG * gb, 0, 1)));
+        }
       }
     }
 
