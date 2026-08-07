@@ -7,7 +7,7 @@ import java.util.List;
 
 /**
  * Headless harness: constructs every piemonte pattern and checks the leading
- * parameter order (Color, Speed, Size, Wow). Run from the repo root:
+ * parameter order (Hue, Speed, Size, Wow). Run from the repo root:
  *   CP="$(cat /tmp/apoth_cp.txt):target/classes:../Apotheneum/target/classes"
  *   javac -cp "$CP" tools/TestAll.java -d /tmp/testall && java -cp "$CP:/tmp/testall" TestAll
  */
@@ -63,13 +63,13 @@ public class TestAll {
         List<String> lead = new ArrayList<>();
         for (LXParameter param : ((LXComponent) p).getParameters()) {
           String label = param.getLabel();
-          if (label.equals("Color") || label.equals("Speed")
+          if (label.equals("Hue") || label.equals("Speed")
               || label.equals("Size") || label.equals("Wow")) {
             lead.add(label);
           }
         }
         boolean ok = lead.size() >= 4
-          && lead.get(0).equals("Color") && lead.get(1).equals("Speed")
+          && lead.get(0).equals("Hue") && lead.get(1).equals("Speed")
           && lead.get(2).equals("Size") && lead.get(3).equals("Wow");
         if (ok) {
           System.out.println("OK " + name);

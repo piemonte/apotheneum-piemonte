@@ -16,11 +16,10 @@
  * Created by patrick piemonte
  *
  * ParameterPattern — an intermediate base (ApotheneumPattern → ParameterPattern
- * → your pattern) that fixes a consistent leading parameter order: color, hue,
- * speed, size, wow. Every pattern that extends it gets those four controls in the same
- * place, and the correct LinkedColorParameter palette init (setMode after
- * addParameter) is centralized here. Subclasses extend this, then add their own
- * parameters (and any extra colors) after super(...). Kept self-contained so
+ * → your pattern) that fixes a consistent leading parameter order: hue,
+ * speed, size, wow. Every pattern that extends it gets those four controls in
+ * the same place. Subclasses extend this, then add their own parameters (and
+ * any extra colors) after super(...). Kept self-contained so
  * last-minute changes don't ripple across other authors' content.
  *
  * "Wow" is a shared performance macro in the spirit of LXStudio-TE's WOW knobs:
@@ -34,20 +33,14 @@ package apotheneum.piemonte;
 import apotheneum.ApotheneumPattern;
 import heronarts.lx.LX;
 import heronarts.lx.color.LXColor;
-import heronarts.lx.color.LinkedColorParameter;
 import heronarts.lx.parameter.CompoundParameter;
 
 public abstract class ParameterPattern extends ApotheneumPattern {
 
-  /** Primary color — palette-linked by default. */
-  public final LinkedColorParameter color =
-    new LinkedColorParameter("Color")
-    .setDescription("Primary color (follows the palette)");
-
-  /** Hue shift (degrees) applied on top of the primary color. */
+  /** Primary hue (degrees) — the single dial that steers pattern color. */
   public final CompoundParameter hue =
     new CompoundParameter("Hue", 0, 0, 360)
-    .setDescription("Hue shift applied to the primary color")
+    .setDescription("Primary hue")
     .setWrappable(true);
 
   /** Animation speed. Range/polarity set per-subclass via the constructor. */
@@ -84,32 +77,20 @@ public abstract class ParameterPattern extends ApotheneumPattern {
     this.size = new CompoundParameter("Size", sizeDef, sizeMin, sizeMax)
       .setDescription("Element size");
 
-    // Canonical leading order: color, hue, speed, size, wow. Subclasses add the rest.
-    addParameter("color", this.color);
+    // Canonical leading order: hue, speed, size, wow. Subclasses add the rest.
     addParameter("hue", this.hue);
     addParameter("speed", this.speed);
     addParameter("size", this.size);
     addParameter("wow", this.wow);
-
-    // setMode after addParameter: the parameter needs its parent/LX set first.
-    this.color.setMode(LinkedColorParameter.Mode.PALETTE);
   }
 
   // Convenience getters. Subclasses can also tweak the
   // inherited params directly, e.g. this.speed.setExponent(2) or
   // this.size.setUnits(LXParameter.Units.INTEGER), in their constructor.
 
-  /**
-   * Resolved primary color for this frame (palette- or static-linked), with
-   * the Hue knob's shift applied — one dial to steer every pattern's colors.
-   */
+  /** Resolved primary color for this frame — the Hue knob at full strength. */
   protected int getColor() {
-    final int c = this.color.calcColor();
-    final float shift = this.hue.getValuef();
-    if (shift == 0) {
-      return c;
-    }
-    return LXColor.hsb((LXColor.h(c) + shift) % 360, LXColor.s(c), LXColor.b(c));
+    return LXColor.hsb(this.hue.getValuef() % 360, 100, 100);
   }
 
   /** Current speed value (bipolar when the configured minimum is negative). */

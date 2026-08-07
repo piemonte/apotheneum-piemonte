@@ -108,7 +108,7 @@ public class Sunrise extends StrandPattern {
     final int n = this.beams.getValuei();
     final int tq = (int) (this.timeMs / 90);
 
-    final float hue = LXColor.h(getColor()); // yellow anchor from the palette
+    final float hue = (LXColor.h(getColor()) + 46) % 360; // Hue 0 = classic yellow sun
     final int core = LXColor.hsb(hue, 42, 100);            // molten yellow center
     final int body = LXColor.hsb(hue, 88, 100);            // yellow
     final int rim = LXColor.hsb((hue + 22) % 360, 95, 96); // orange edge/halo
