@@ -11,7 +11,7 @@
  * red strand running down into the glowing floor pools coiled at the base.
  * Modeled on the holotrigger green/red cascade program.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

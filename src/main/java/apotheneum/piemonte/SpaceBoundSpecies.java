@@ -11,7 +11,7 @@
  * nebula in a complementary hue. A pure-Java Apotheneum take on the
  * LXStudio-TE Starfield shader.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

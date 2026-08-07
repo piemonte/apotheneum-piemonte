@@ -9,7 +9,7 @@
  * own direction the crowd wraps around you in a 360 degree panorama. Most figures
  * glow pale blue-white; a few are vivid specks. They sway as if walking.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

@@ -12,7 +12,7 @@
  * a gold flood, red matrix, a pale white passage, and near-blackout lulls —
  * some easing in, some snapping. Modeled on the holotrigger rotunda show.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

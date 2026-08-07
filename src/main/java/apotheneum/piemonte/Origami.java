@@ -11,7 +11,7 @@
  * it's gone, then the folding continues on the next layer, a new color with
  * every crease. Wow makes each fold flash harder and crease brighter.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

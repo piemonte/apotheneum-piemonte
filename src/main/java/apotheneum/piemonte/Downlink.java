@@ -9,7 +9,7 @@
  * flicker on and re-roll with the beat. Cyan service strips glow along the
  * floor line. Modeled on the holotrigger green/red studio session.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

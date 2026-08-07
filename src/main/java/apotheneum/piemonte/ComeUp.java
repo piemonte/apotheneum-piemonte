@@ -10,7 +10,7 @@
  * rising bubbles and scintillating sparkles. Each time the glass fills, the flood
  * color rotates to a new hue, so the piece cycles color with every fill.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

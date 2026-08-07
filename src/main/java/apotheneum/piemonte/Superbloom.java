@@ -11,7 +11,7 @@
  * folds away, its place taken by a fresh bud somewhere new. Wow pushes the
  * garden into overdrive: harder beat-pulses, shimmering petals, faster unfurl.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

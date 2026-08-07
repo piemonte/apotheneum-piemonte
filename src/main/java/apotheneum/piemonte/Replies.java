@@ -9,7 +9,7 @@
  * chamber echoing the inner one. Wow chains the bursts into cascades that
  * ripple around the cylinder and set multiple faces talking at once.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

@@ -10,7 +10,7 @@
  * into a spectral burst. A "warp destination" glow. Inspired by the LXStudio-TE
  * FourStar shader.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

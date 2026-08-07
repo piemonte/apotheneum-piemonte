@@ -8,7 +8,7 @@
  * runs out. White-hot heads trail fading rainbow gradients that shift hue with
  * each generation. An Apotheneum take on a vertex-to-vertex cascade.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

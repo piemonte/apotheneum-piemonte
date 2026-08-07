@@ -11,7 +11,7 @@
  * streaks tangle at the base, and every few seconds the entire room washes
  * hard red for a heartbeat. Modeled on the holotrigger glyph-display session.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

@@ -11,7 +11,7 @@
  * synchronized wave down every ray at once, and Wow grows extra rays.
  * After the LXStudio-TE Afterglow.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

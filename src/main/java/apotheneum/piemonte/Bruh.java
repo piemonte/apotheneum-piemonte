@@ -7,7 +7,7 @@
  * in a bamboo forest. Where each drop strikes the floor, water splashes upward in
  * a small arc and falls back. Dense, continuous, elemental.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

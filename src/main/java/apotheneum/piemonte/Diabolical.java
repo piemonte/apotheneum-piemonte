@@ -9,7 +9,7 @@
  * A graphics-forward, hypnotic field inspired by the LXStudio-TE SpiralDiamonds
  * shader.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

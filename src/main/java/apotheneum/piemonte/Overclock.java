@@ -11,7 +11,7 @@
  * in the new color, passing through cyan on the way. Modeled on the
  * holotrigger Shimmer Hammer program.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

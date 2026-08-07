@@ -11,7 +11,7 @@
  * ready and send the next volley up, and the louder it gets the faster
  * everything climbs. In silence it crackles on its own timing, unchanged.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

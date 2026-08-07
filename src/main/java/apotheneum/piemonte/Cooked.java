@@ -12,7 +12,7 @@
  * spectacular. Inspired by the racing right-angle strand runs of the
  * holotrigger reference.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

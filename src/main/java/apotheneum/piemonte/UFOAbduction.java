@@ -15,7 +15,7 @@
  * mixed sections, and a big drop collapses the field to black before
  * slamming a fresh wave up every lane. Modeled on the wave.mov reference.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

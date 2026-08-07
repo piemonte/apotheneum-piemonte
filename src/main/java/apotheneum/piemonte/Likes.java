@@ -10,7 +10,7 @@
  * Wow and the traces glitch like SpecialKube, dots strobing between white
  * and purple; hard hits still bloom the whole field at once.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

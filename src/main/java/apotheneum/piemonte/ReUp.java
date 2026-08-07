@@ -8,7 +8,7 @@
  * groups drop out on the next hits. Louder hits knock out wider groups. An
  * audio-reactive curtain that keeps rebuilding itself.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

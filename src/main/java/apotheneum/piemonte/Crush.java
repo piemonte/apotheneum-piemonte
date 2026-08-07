@@ -12,7 +12,7 @@
  * color, pour after pour. A momentary Strobe button flashes only the region
  * above the surface line.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;

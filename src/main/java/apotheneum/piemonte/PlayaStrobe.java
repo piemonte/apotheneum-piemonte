@@ -13,7 +13,7 @@
  * pulsating white burst that decays away after release. Wow feeds the cyclone
  * and hardens every strobe.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;
