@@ -29,6 +29,7 @@ public class TestAll {
     "Likes",
     "LockedIn",
     "Liftoff",
+    "Nice",
     "Origami",
     "Overclock",
     "Overflow",

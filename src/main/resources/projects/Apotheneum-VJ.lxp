@@ -4297,6 +4297,10 @@
               {
                 "id": 9846800,
                 "class": "apotheneum.piemonte.Sunrise"
+              },
+              {
+                "id": 9847806,
+                "class": "apotheneum.piemonte.Nice"
               }
             ]
           },
@@ -4507,6 +4511,10 @@
               {
                 "id": 9846801,
                 "class": "apotheneum.piemonte.Sunrise"
+              },
+              {
+                "id": 9847807,
+                "class": "apotheneum.piemonte.Nice"
               }
             ]
           },
@@ -4717,6 +4725,10 @@
               {
                 "id": 9846802,
                 "class": "apotheneum.piemonte.Sunrise"
+              },
+              {
+                "id": 9847808,
+                "class": "apotheneum.piemonte.Nice"
               }
             ]
           },
@@ -4927,6 +4939,10 @@
               {
                 "id": 9846803,
                 "class": "apotheneum.piemonte.Sunrise"
+              },
+              {
+                "id": 9847809,
+                "class": "apotheneum.piemonte.Nice"
               }
             ]
           },
@@ -5137,6 +5153,10 @@
               {
                 "id": 9846804,
                 "class": "apotheneum.piemonte.Sunrise"
+              },
+              {
+                "id": 9847810,
+                "class": "apotheneum.piemonte.Nice"
               }
             ]
           },
@@ -5347,6 +5367,10 @@
               {
                 "id": 9846805,
                 "class": "apotheneum.piemonte.Sunrise"
+              },
+              {
+                "id": 9847811,
+                "class": "apotheneum.piemonte.Nice"
               }
             ]
           },
