@@ -7,7 +7,7 @@ exterior + interior surfaces, 28,512 nodes).
 
 ## Contents
 
-35 patterns under `apotheneum.piemonte`:
+36 patterns under `apotheneum.piemonte`:
 
 | Pattern | What it looks like |
 |---|---|
@@ -17,6 +17,7 @@ exterior + interior surfaces, 28,512 nodes).
 | **ComeUp** | A glass of water filling: a turbulent, foamy waterline rises with sparkles and bubbles beneath, cycling to a new hue with every refill; cube, cylinder, or both |
 | **Cooked** | Snake, the whole arcade at once: dozens of glowing snakes carve right-angle paths across the surfaces; run into another's tail and you glitch out — strobing cyan-white — while a fresh snake hatches elsewhere |
 | **Cope** | Thick bars of light on the structure's vertical edges breathe with the music; bass drops erupt into radial shock rings that bloom across the surfaces |
+| **CrashingOut** | LockedIn's restless sibling: bars beam in, bounce, lock — then crash back out in reverse off their entry edge before the next color set enters from the opposite side |
 | **Crush** | Segmented beams spiral down like a zoetrope drum and stack into a gradient; once full, new gradients pour down behind a churning surface line, then teardown slits empty the canvas and the build loops — with a strobe that fires only above the surface |
 | **Destination** | A blazing point at the center of each face throws flickering radial streaks with per-ray hues; a strobe button pulses cyan-white glitch shockrings outward from the star |
 | **Diabolical** | Thick concentric diamond bands spiral out from center in a shifting rainbow, each band whitening along its spine; Wow ripples the field like a flag |
