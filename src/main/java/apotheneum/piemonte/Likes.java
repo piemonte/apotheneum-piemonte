@@ -3,14 +3,12 @@
  *
  * Created by patrick piemonte
  *
- * Likes — green circuitry firing across the strands. On every hit, a handful
- * of circuit traces ignite at random spots around the surfaces: connected
- * right-angle paths that draw themselves in — vertical runs, sharp sideways
- * jogs, an occasional closed block — dashed like LED traces, twinkling per
- * dot, white-hot at the junctions. Each glyph holds for a beat, then erodes
- * away dot by dot. Trigger by bass hits, pitch (high-band) hits, or a random
- * clock; big drops bloom the whole field at once. Split out of the Mainframe
- * reference (holotrigger studio session).
+ * Likes — purple circuitry firing across the strands. On every hit — bass,
+ * pitch, a random clock, or the manual Fire button — traces ignite at random
+ * spots: connected right-angle paths drawing themselves in, dashed and
+ * twinkling with white-hot junctions, each eroding away dot by dot. Turn up
+ * Wow and the traces glitch like SpecialKube, dots strobing between white
+ * and purple; hard hits still bloom the whole field at once.
  *
  * Best viewed in deep playa or in the dust.
  */
@@ -21,6 +19,7 @@ import apotheneum.Apotheneum;
 import heronarts.lx.LX;
 import heronarts.lx.LXCategory;
 import heronarts.lx.color.LXColor;
+import heronarts.lx.parameter.BooleanParameter;
 import heronarts.lx.parameter.CompoundParameter;
 import heronarts.lx.parameter.DiscreteParameter;
 import heronarts.lx.parameter.EnumParameter;
@@ -53,6 +52,11 @@ public class Likes extends StrandPattern {
   public final CompoundParameter sensitivity =
     new CompoundParameter("Sens", 0.5, 0, 1)
     .setDescription("How easily hits fire");
+
+  public final BooleanParameter fire =
+    new BooleanParameter("Fire", false)
+    .setMode(BooleanParameter.Mode.MOMENTARY)
+    .setDescription("Manually ignite a burst of traces");
 
   /** One glyph = a connected right-angle path, precomputed at spawn. */
   private final class Surface {
@@ -120,6 +124,7 @@ public class Likes extends StrandPattern {
   private final Surface cylinder = new Surface();
   private double trebAvg, prevTreb, sinceTrebMs = 1e9;
   private double randomTimer = 0;
+  private boolean fireWasOn = false;
   private double bloom = 0;
 
   public Likes(LX lx) {
@@ -128,6 +133,7 @@ public class Likes extends StrandPattern {
     addParameter("density", this.density);
     addParameter("trigger", this.trigger);
     addParameter("sensitivity", this.sensitivity);
+    addParameter("fire", this.fire);
     addTargetParameter();
   }
 
@@ -167,9 +173,15 @@ public class Likes extends StrandPattern {
     final boolean pitchHit = detectPitchHit(deltaMs);
 
     boolean fire = false;
+    // manual ignition: button edge fires in any trigger mode
+    final boolean fireBtn = this.fire.isOn();
+    if (fireBtn && !this.fireWasOn) {
+      fire = true;
+    }
+    this.fireWasOn = fireBtn;
     switch (this.trigger.getEnum()) {
-      case BASS: fire = this.beat; break;
-      case PITCH: fire = pitchHit; break;
+      case BASS: fire |= this.beat; break;
+      case PITCH: fire |= pitchHit; break;
       case RANDOM:
         this.randomTimer -= deltaMs;
         if (this.randomTimer <= 0) {
@@ -205,9 +217,14 @@ public class Likes extends StrandPattern {
     final int h = o.height();
     final double speed = Math.max(0.05, getSpeed());
     final double hueShift = LXColor.h(getColor());
-    final int green = LXColor.hsb((float) (((121 + hueShift) % 360)), 95, 100);
-    final int dimGreen = LXColor.hsb((float) (((95 + hueShift) % 360)), 90, 100); // yellow-green low end
-    final int hot = LXColor.lerp(green, LXColor.WHITE, 0.7f);
+    final int purple = LXColor.hsb((float) (((278 + hueShift) % 360)), 92, 100);
+    final int dimPurple = LXColor.hsb((float) (((262 + hueShift) % 360)), 85, 100); // violet low end
+    final int hot = LXColor.lerp(purple, LXColor.WHITE, 0.7f);
+    // Wow: SpecialKube-style glitch — dots strobe between white and purple
+    final double glitchAmt = getWow();
+    final double gt = this.timeMs * (0.02 + glitchAmt * 0.04);
+    final boolean strobeOn = ((this.timeMs * 0.001 * (6.0 + glitchAmt * 4.0)) % 1.0)
+      < (0.12 + glitchAmt * 0.14);
     final int tq = (int) (this.timeMs / 90); // ~11Hz dot twinkle
     final double dashOn = 0.5 + getSize() * 0.2; // mark:gap near 1:1
     final double lifeSpeed = speed * 2;
@@ -246,7 +263,17 @@ public class Likes extends StrandPattern {
           // white-hot: junctions (segment ends) and the drawing head
           final boolean junction = (k == 0 || k == len);
           final boolean head = (walked + k) >= drawLen - 2 && reveal < 1;
-          int c = (junction || head) ? hot : (tw < 0.72 ? dimGreen : green);
+          int c = (junction || head) ? hot : (tw < 0.72 ? dimPurple : purple);
+          if (glitchAmt > 0.05) {
+            // glitch flicker: dots flip white<->purple, harder with the dial
+            final double gflip = hashd(s.seed[g] + (walked + k) * 613 + (int) (gt * 10));
+            if (strobeOn && gflip < 0.35 + glitchAmt * 0.4) {
+              c = LXColor.WHITE;
+              b *= 1.3;
+            } else if (gflip > 0.94 - glitchAmt * 0.2) {
+              c = LXColor.lerp(LXColor.WHITE, purple, 0.35f);
+            }
+          }
           addPix(o, x, y, c, LXUtils.clamp(b, 0, 1));
         }
         walked += len;
@@ -255,7 +282,7 @@ public class Likes extends StrandPattern {
 
     // faint lingering room spill after blooms
     if (this.bloom > 0.05) {
-      final int spill = LXColor.scaleBrightness(green, (float) (this.bloom * 0.18));
+      final int spill = LXColor.scaleBrightness(purple, (float) (this.bloom * 0.18));
       for (int x = 0; x < w; ++x) {
         for (int y = 0; y < h; ++y) {
           final int idx = o.point(x, y).index;
