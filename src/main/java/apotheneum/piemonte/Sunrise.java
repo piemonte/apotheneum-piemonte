@@ -4,15 +4,14 @@
  * Created by patrick piemonte
  *
  * Sunrise — a sun literally rises from the bottom of each facade. The disc
- * climbs from below the horizon with a white-hot core, yellow body, and a
- * warm orange halo, radiating thick yellow and white beams outward at angled
- * directions. The higher the sun climbs, the more beams break out, each one
+ * climbs from below the horizon — huge, molten, all orange and yellow —
+ * radiating thick yellow and orange beams outward at angled directions. The higher the sun climbs, the more beams break out, each one
  * flaring in from nothing and swaying gently as it burns. At the peak the
  * day turns and the sun eases back down, beams folding away, before dawn
  * breaks again. Beats flare the beams; Wow speeds the sway and sharpens the
  * flare.
  *
- * Best viewed in deep playa or in the dust.
+ * WARNING: Flashing imagery, best viewed in deep playa
  */
 
 package apotheneum.piemonte;
@@ -28,7 +27,7 @@ import heronarts.lx.utils.LXUtils;
 public class Sunrise extends StrandPattern {
 
   private static final int MAX_BEAMS = 24;
-  private static final double CYCLE_MS = 24000;  // full rise-and-set at speed 0.5
+  private static final double CYCLE_MS = 52000;  // full rise-and-set at speed 0.5
   private static final double Y_LOW = 1.14;      // start below the horizon
   private static final double Y_HIGH = 0.28;     // peak height (0 = top)
 
@@ -89,7 +88,7 @@ public class Sunrise extends StrandPattern {
       this.beamHw[i] = Math.toRadians(5 + 7 * hashd(i * 131 + 9)); // thick
       final double thr = hashd(i * 53 + 3) * 0.8;
       this.beamVis[i] = LXUtils.clamp((rise - thr) / 0.12, 0, 1);
-      this.beamWhite[i] = (i % 3) == 2; // every third beam burns white
+      this.beamWhite[i] = (i % 3) == 2; // every third beam burns orange
     }
   }
 
@@ -110,13 +109,13 @@ public class Sunrise extends StrandPattern {
     final int tq = (int) (this.timeMs / 90);
 
     final float hue = LXColor.h(getColor()); // yellow anchor from the palette
-    final int core = LXColor.hsb(hue, 18, 100);            // white-hot center
+    final int core = LXColor.hsb(hue, 42, 100);            // molten yellow center
     final int body = LXColor.hsb(hue, 88, 100);            // yellow
     final int rim = LXColor.hsb((hue + 22) % 360, 95, 96); // orange edge/halo
     final int beamY = LXColor.hsb(hue, 80, 100);
-    final int beamW = LXColor.hsb(hue, 10, 100);
+    final int beamW = LXColor.hsb((hue + 24) % 360, 92, 100); // orange beams
 
-    final double R = (0.10 + getSize() * 0.14) * h; // sun radius in rows
+    final double R = (0.20 + getSize() * 0.35) * h; // sun radius in rows
     final double yc = LXUtils.lerp(Y_LOW, Y_HIGH, rise);
     final double sunY = yc * (h - 1);
     final double beamGain = (0.75 + 0.25 * this.levelEnv + this.flare * 0.5)
