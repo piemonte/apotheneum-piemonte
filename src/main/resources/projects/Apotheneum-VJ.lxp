@@ -4289,6 +4289,10 @@
               {
                 "id": 9843712,
                 "class": "apotheneum.piemonte.Ghosted"
+              },
+              {
+                "id": 9845794,
+                "class": "apotheneum.piemonte.LockedIn"
               }
             ]
           },
@@ -4491,6 +4495,10 @@
               {
                 "id": 9843714,
                 "class": "apotheneum.piemonte.Ghosted"
+              },
+              {
+                "id": 9845795,
+                "class": "apotheneum.piemonte.LockedIn"
               }
             ]
           },
@@ -4693,6 +4701,10 @@
               {
                 "id": 9843716,
                 "class": "apotheneum.piemonte.Ghosted"
+              },
+              {
+                "id": 9845796,
+                "class": "apotheneum.piemonte.LockedIn"
               }
             ]
           },
@@ -4895,6 +4907,10 @@
               {
                 "id": 9843718,
                 "class": "apotheneum.piemonte.Ghosted"
+              },
+              {
+                "id": 9845797,
+                "class": "apotheneum.piemonte.LockedIn"
               }
             ]
           },
@@ -5097,6 +5113,10 @@
               {
                 "id": 9844754,
                 "class": "apotheneum.piemonte.Ghosted"
+              },
+              {
+                "id": 9845798,
+                "class": "apotheneum.piemonte.LockedIn"
               }
             ]
           },
@@ -5299,6 +5319,10 @@
               {
                 "id": 9844793,
                 "class": "apotheneum.piemonte.Ghosted"
+              },
+              {
+                "id": 9845799,
+                "class": "apotheneum.piemonte.LockedIn"
               }
             ]
           },

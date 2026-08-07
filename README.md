@@ -7,7 +7,7 @@ exterior + interior surfaces, 28,512 nodes).
 
 ## Contents
 
-32 patterns under `apotheneum.piemonte`:
+33 patterns under `apotheneum.piemonte`:
 
 | Pattern | What it looks like |
 |---|---|
@@ -27,6 +27,7 @@ exterior + interior surfaces, 28,512 nodes).
 | **Ghosted** | Dotted comet lines fire floor-to-sky in a radar sweep marching clockwise around the structure — red-hot floor, white shockwave band, azure sky — breathing in build/climax/blackout swells |
 | **Liftoff** | Fuses climb every vertical string and burst in bright flashes, ember trails lingering; kicks detonate on the beat and drops launch a multi-rocket volley |
 | **Likes** | Purple circuit traces ignite on bass, pitch, random hits, or the Fire button — right-angle paths drawing themselves in and eroding dot by dot; Wow glitches the dots between white and purple |
+| **LockedIn** | Sets of thick bars beam to the center, bop, and freeze — five overlapping colors stacking from alternating bottom/top entries before the lock releases and the cycle restarts |
 | **Origami** | A sheet ruled with drifting diagonal lines folds on the beat (or the button): flaps sweep over with a white crease flash, each fold revealing a new color layer |
 | **Overclock** | A dense fixed strand curtain shimmers downward into a bright floor pool while a circuit maze re-routes at the hang line; the room breathes emerald↔azure through near-black |
 | **Overflow** | A segmented band of red/green equalizer blocks hangs mid-wall, reconfiguring like letterforms, pulsing with the beat, pooling on the floor, and flooding the room green on drops |
