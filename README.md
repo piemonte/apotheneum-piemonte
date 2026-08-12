@@ -26,6 +26,7 @@ exterior + interior surfaces, 28,512 nodes).
 | **Downlink** | Emerald matrix-rain and red data-bars persist over a room flood that snaps green↔red through amber, above a warm console ring and glittering green floor puddles |
 | **Drip** | Standing beaded strands hang rim to floor, scintillating downward and curling into floor hooks; beats advance the scene journey and hard drops leap it to a random scene — green, red, blue, gold, white, blackout |
 | **FeelSomething** | Bold glowing rods rain down, bounce and tumble, spraying vivid white-hot sparks that cool to color as they arc |
+| **FriendZoned** | Concentric circles born at each facade's center slowly expand, cracking into splits, then lines and dots as they near the edge, each ring spinning its own way with randomized ring-to-ring gaps; on the cylinder the rings rise base to top |
 | **Ghosted** | Dotted comet lines fire floor-to-sky in a radar sweep marching clockwise around the structure — red-hot floor, white shockwave band, azure sky — breathing in build/climax/blackout swells |
 | **Liftoff** | Fuses climb every vertical string and burst in bright flashes, ember trails lingering; kicks detonate on the beat and drops launch a multi-rocket volley |
 | **Likes** | Purple circuit traces ignite on bass, pitch, random hits, or the Fire button — right-angle paths drawing themselves in and eroding dot by dot; Wow glitches the dots between white and purple |

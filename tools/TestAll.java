@@ -27,6 +27,7 @@ public class TestAll {
     "Downlink",
     "Drip",
     "FeelSomething",
+    "FriendZoned",
     "Ghosted",
     "Likes",
     "LockedIn",
