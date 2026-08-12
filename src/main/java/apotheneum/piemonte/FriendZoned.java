@@ -5,11 +5,13 @@
  *
  * FriendZoned — concentric circles are born at the center of each facade and
  * slowly expand outward. Close to the center each ring is a continuous
- * circle; as it expands, small splits crack open along its edge, the splits
- * widen into gaps, and by the time a ring nears the canvas edge it has
- * crumbled into drifting lines and dots. Every ring spins on its own —
- * randomly clockwise or counter-clockwise — and the radial gap between
- * successive rings is randomized. On the cylinder the rings rise instead:
+ * circle; as it expands, cracks nucleate one by one at random points along
+ * its edge and spread open like fracturing glass, and by the time a ring
+ * nears the canvas edge it has crumbled into drifting lines and dots — then
+ * it shatters, the dots detaching as embers that fly free with the ring's
+ * angular momentum and burn out. Every ring spins on its own — randomly
+ * clockwise or counter-clockwise — and the radial gap between successive
+ * rings is randomized. On the cylinder the rings rise instead:
  * each circle wraps the full circumference and expands from the base to the
  * top. Splits bounds how many cracks a ring can develop; Spin scales the
  * rotation rate; Size runs the stroke from hairline to fat; beats flare
@@ -36,8 +38,9 @@ import heronarts.lx.utils.LXUtils;
 public class FriendZoned extends StrandPattern {
 
   private static final int MAX_RINGS = 14;
-  private static final double V_EXPAND = 0.00013; // normalized radius per ms at speed 0.5
-  private static final double DONE = 1.08;        // past the canvas edge, ring retires
+  private static final int MAX_EMBERS = 160;
+  private static final double V_EXPAND = 0.00013;  // normalized radius per ms at speed 0.5
+  private static final double SHATTER_AT = 0.95;   // at the canvas edge, rings shatter
 
   /** Upper bound on the per-ring random split count (each ring rolls 3..Splits). */
   public final DiscreteParameter splits =
@@ -58,6 +61,17 @@ public class FriendZoned extends StrandPattern {
   private final double[] segPh = new double[MAX_RINGS];  // split-mask phase
   private final double[] gap = new double[MAX_RINGS];    // radial gap before the next ring
   private final double[] hueOff = new double[MAX_RINGS];
+  private final int[] seed = new int[MAX_RINGS];         // salts per-split crack timing
+
+  // ember pool: shattered ring fragments in free flight (angle/radius space)
+  private final boolean[] eAlive = new boolean[MAX_EMBERS];
+  private final double[] eAng = new double[MAX_EMBERS];
+  private final double[] eRad = new double[MAX_EMBERS];
+  private final double[] eVr = new double[MAX_EMBERS];   // radial fling, per ms
+  private final double[] eVa = new double[MAX_EMBERS];   // angular drift, per ms
+  private final double[] eLife = new double[MAX_EMBERS];
+  private final double[] eMs = new double[MAX_EMBERS];
+  private final double[] eHueOff = new double[MAX_EMBERS];
 
   private int newest = -1;
   private double flare = 0;
@@ -97,6 +111,7 @@ public class FriendZoned extends StrandPattern {
       this.segPh[i] = Math.random();
       this.gap[i] = 0.05 + Math.random() * 0.12;
       this.hueOff[i] = (Math.random() - 0.5) * 36;
+      this.seed[i] = (int) (Math.random() * 1e6);
       this.newest = i;
       return;
     }
@@ -129,9 +144,21 @@ public class FriendZoned extends StrandPattern {
       if (!this.alive[i]) continue;
       this.rad[i] += V_EXPAND * dt; // uniform expansion keeps the gaps intact
       this.rot[i] += this.rotV[i] * this.spin.getValue() * dt;
-      if (this.rad[i] > DONE) {
+      if (this.rad[i] >= SHATTER_AT) {
+        spawnEmbers(i); // the ring shatters — its dots detach and fly
         this.alive[i] = false;
         if (this.newest == i) this.newest = -1;
+      }
+    }
+
+    // embers: fling outward with the ring's angular momentum, then burn out
+    for (int e = 0; e < MAX_EMBERS; ++e) {
+      if (!this.eAlive[e]) continue;
+      this.eRad[e] += this.eVr[e] * dt;
+      this.eAng[e] += this.eVa[e] * dt;
+      this.eLife[e] -= dt;
+      if (this.eLife[e] <= 0 || this.eRad[e] > 1.4) {
+        this.eAlive[e] = false;
       }
     }
 
@@ -151,11 +178,15 @@ public class FriendZoned extends StrandPattern {
     final double a = theta + this.rot[i];
     double m = 1;
 
-    final double crack = LXUtils.clamp((u - 0.18) / 0.55, 0, 1);
-    if (crack > 0) {
-      final double f = frac(a / (2 * Math.PI) * this.segs[i] + this.segPh[i]);
-      final double dGap = Math.min(f, 1 - f);      // 0 at split center
-      final double gapW = 0.005 + 0.42 * crack;    // hairline crack → wide gap
+    // each split nucleates at its own radius and spreads open individually,
+    // so cracks appear one by one and propagate around the ring
+    final double pos = a / (2 * Math.PI) * this.segs[i] + this.segPh[i];
+    final long j = Math.round(pos);
+    final int jIdx = (int) (((j % this.segs[i]) + this.segs[i]) % this.segs[i]);
+    final double cj = crackOpen(i, jIdx, u);
+    if (cj > 0) {
+      final double dGap = Math.abs(pos - j);       // 0 at split center
+      final double gapW = 0.005 + 0.42 * cj;       // hairline crack → wide gap
       m *= LXUtils.clamp((dGap - gapW * 0.5) / 0.10, 0, 1);
     }
 
@@ -171,6 +202,64 @@ public class FriendZoned extends StrandPattern {
       m *= 1 - depth * dotty * hashd(i * 977 + (int) (f2 * 37) + tq);
     }
     return m;
+  }
+
+  /** How far split jIdx of ring i has opened at expansion u (0 none → 1 full). */
+  private double crackOpen(int i, int jIdx, double u) {
+    final double start = 0.14 + 0.42 * hashd(this.seed[i] + jIdx * 97);
+    return LXUtils.clamp((u - start) / 0.30, 0, 1);
+  }
+
+  /** Shatter: the ring's end-stage dots detach as embers in free flight. */
+  private void spawnEmbers(int i) {
+    final int nDots = this.segs[i] * 3;
+    final double spinV = this.spin.getValue();
+    for (int k = 0; k < nDots; ++k) {
+      // dot centers of the secondary (dotting) mask, in ring-local angle
+      final double a = (k - this.segPh[i] * 2.7) / nDots * 2 * Math.PI;
+      // skip dots that already vanished inside a fully opened crack
+      final double pos = a / (2 * Math.PI) * this.segs[i] + this.segPh[i];
+      final long j = Math.round(pos);
+      final int jIdx = (int) (((j % this.segs[i]) + this.segs[i]) % this.segs[i]);
+      final double gapW = 0.005 + 0.42 * crackOpen(i, jIdx, SHATTER_AT);
+      if (LXUtils.clamp((Math.abs(pos - j) - gapW * 0.5) / 0.10, 0, 1) < 0.25) continue;
+      for (int e = 0; e < MAX_EMBERS; ++e) {
+        if (this.eAlive[e]) continue;
+        this.eAlive[e] = true;
+        this.eAng[e] = a - this.rot[i]; // world angle at the moment of shatter
+        this.eRad[e] = SHATTER_AT;
+        this.eVr[e] = V_EXPAND * (1.6 + Math.random() * 1.6);
+        this.eVa[e] = this.rotV[i] * spinV + (Math.random() - 0.5) * 0.00015;
+        this.eMs[e] = 600 + Math.random() * 600;
+        this.eLife[e] = this.eMs[e];
+        this.eHueOff[e] = this.hueOff[i];
+        break;
+      }
+    }
+  }
+
+  /** One ember: a soft 3x3 spark, white-hot young, cooling as it burns out. */
+  private void drawEmber(Apotheneum.Orientation o, int x, int y, int e,
+      float baseHue, double gain, float wht, int tq) {
+    final double lifeF = this.eLife[e] / this.eMs[e];
+    final double flick = 0.55 + 0.45 * hashd(e * 77 + tq * 13);
+    int c = LXColor.hsb(
+      (float) ((((baseHue + this.eHueOff[e]) % 360) + 360) % 360), 92, 100);
+    final float hotf = (float) (LXUtils.clamp((lifeF - 0.55) / 0.45, 0, 1) * 0.55);
+    if (hotf > 0) {
+      c = LXColor.lerp(c, LXColor.WHITE, hotf);
+    }
+    if (wht > 0.01) {
+      c = LXColor.lerp(c, LXColor.WHITE, wht);
+    }
+    final double bb = lifeF * flick * gain;
+    for (int dxo = -1; dxo <= 1; ++dxo) {
+      for (int dyo = -1; dyo <= 1; ++dyo) {
+        final double fall = (dxo == 0 && dyo == 0) ? 1
+          : (dxo != 0 && dyo != 0) ? 0.25 : 0.45;
+        addPix(o, x + dxo, y + dyo, c, Math.min(1, bb * fall));
+      }
+    }
   }
 
   private int ringColor(int i, float baseHue, double u) {
@@ -249,6 +338,16 @@ public class FriendZoned extends StrandPattern {
             }
           }
         }
+
+        // shattered-ring embers flying off this face
+        for (int e = 0; e < MAX_EMBERS; ++e) {
+          if (!this.eAlive[e]) continue;
+          final double px = cxf + Math.cos(this.eAng[e]) * this.eRad[e] * rMax;
+          final double py = cyf + Math.sin(this.eAng[e]) * this.eRad[e] * rMax;
+          if (px < -2 || px > faceW + 1 || py < -2 || py > h + 1) continue;
+          drawEmber(o, x0 + (int) Math.round(px), (int) Math.round(py),
+            e, baseHue, gain, wht, tq);
+        }
       }
     } else {
       // on the cylinder the circles wrap the circumference and rise from the base
@@ -288,6 +387,15 @@ public class FriendZoned extends StrandPattern {
             addPix(o, x, y, c, Math.min(1, cov * m * gain * throb));
           }
         }
+      }
+
+      // shattered-ring embers flinging up off the top rim
+      for (int e = 0; e < MAX_EMBERS; ++e) {
+        if (!this.eAlive[e]) continue;
+        final double exf = this.eAng[e] / (2 * Math.PI) * w;
+        final double eyf = (h - 1) - this.eRad[e] * (h - 1);
+        drawEmber(o, (int) Math.round(exf), (int) Math.round(eyf),
+          e, baseHue, gain, wht, tq);
       }
     }
   }
