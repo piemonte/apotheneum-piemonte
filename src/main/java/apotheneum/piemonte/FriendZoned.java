@@ -14,8 +14,10 @@
  * top. Splits bounds how many cracks a ring can develop; Spin scales the
  * rotation rate; Size runs the stroke from hairline to fat; beats flare
  * the rings; a Pulse tap sweeps
- * every ring to white and melts back to the set color; Wow deepens the
- * fragment flicker and spreads the ring hues.
+ * every ring to white and melts back to the set color; Wow layers on the
+ * flourish — a radiant aura blooming off every ring, white-hot leading
+ * edges, a slow per-ring throb, deeper fragment flicker, and a wider hue
+ * spread.
  *
  * WARNING: Flashing imagery, best viewed in deep playa
  */
@@ -191,6 +193,11 @@ public class FriendZoned extends StrandPattern {
     // Pulse whiteout blend for this frame
     final float wht = (float) (this.whiteEnv * 0.9);
 
+    // Wow flourish: radiant aura bloom off every ring, a white-hot leading
+    // edge, and a slow per-ring throb (plus the deeper fragment flicker and
+    // wider hue spread inside arcMask/ringColor). Inert at Wow 0.
+    final double wow = getWow();
+
     if (isCube) {
       // circles expand from the center of each face
       final int faceW = w / 4;
@@ -210,22 +217,35 @@ public class FriendZoned extends StrandPattern {
             boolean haveTheta = false;
             for (int i = 0; i < MAX_RINGS; ++i) {
               if (!this.alive[i]) continue;
-              final double dR = Math.abs(rPix - this.rad[i] * rMax);
-              if (dR > halfW * 3 + 1) continue;
+              final double dSigned = rPix - this.rad[i] * rMax; // + outside the ring
+              final double dR = Math.abs(dSigned);
+              if (dR > halfW * 3 + 1 + wow * halfW * 5) continue;
               if (!haveTheta) {
                 theta = Math.atan2(dy, dx);
                 haveTheta = true;
               }
               // gaussian cross-section: bright core melting into a soft glow
               final double dn = dR / (halfW + 0.35);
-              final double cov = Math.exp(-1.6 * dn * dn);
+              double cov = Math.exp(-1.6 * dn * dn);
+              if (wow > 0.01) {
+                // wide dim aura bleeding off the stroke
+                final double an = dR / (halfW * 2.5 + 1.2);
+                cov += wow * 0.35 * Math.exp(-0.9 * an * an);
+              }
               final double m = arcMask(i, theta, this.rad[i], tq);
-              if (m <= 0.02) continue;
+              if (cov * m <= 0.02) continue;
               int c = ringColor(i, baseHue, this.rad[i]);
+              if (wow > 0.01 && dSigned > 0) {
+                // white-hot leading (outer) edge, saturated body behind it
+                c = LXColor.lerp(c, LXColor.WHITE,
+                  (float) (wow * 0.4 * Math.min(1, dSigned / (halfW + 0.5))));
+              }
               if (wht > 0.01) {
                 c = LXColor.lerp(c, LXColor.WHITE, wht);
               }
-              addPix(o, x0 + lx, y, c, Math.min(1, cov * m * gain));
+              final double throb = 1 - wow * 0.3
+                * (0.5 + 0.5 * Math.sin(this.timeMs * 0.0045 + i * 1.7));
+              addPix(o, x0 + lx, y, c, Math.min(1, cov * m * gain * throb));
             }
           }
         }
@@ -238,20 +258,34 @@ public class FriendZoned extends StrandPattern {
         for (int i = 0; i < MAX_RINGS; ++i) {
           if (!this.alive[i]) continue;
           final double ringY = (h - 1) - this.rad[i] * (h - 1);
-          final int yLo = (int) Math.floor(ringY - halfW * 3 - 1);
-          final int yHi = (int) Math.ceil(ringY + halfW * 3 + 1);
+          final double reach = halfW * 3 + 1 + wow * halfW * 5;
+          final int yLo = (int) Math.floor(ringY - reach);
+          final int yHi = (int) Math.ceil(ringY + reach);
           final double m = arcMask(i, theta, this.rad[i], tq);
           if (m <= 0.02) continue;
-          int c = ringColor(i, baseHue, this.rad[i]);
-          if (wht > 0.01) {
-            c = LXColor.lerp(c, LXColor.WHITE, wht);
-          }
+          final int base = ringColor(i, baseHue, this.rad[i]);
+          final double throb = 1 - wow * 0.3
+            * (0.5 + 0.5 * Math.sin(this.timeMs * 0.0045 + i * 1.7));
           for (int y = Math.max(0, yLo); y <= Math.min(h - 1, yHi); ++y) {
+            final double dSigned = ringY - y; // + above the ring: its travel direction
+            final double dR = Math.abs(dSigned);
             // gaussian cross-section, matching the cube's soft-glow ring profile
-            final double dn = Math.abs(y - ringY) / (halfW + 0.35);
-            final double cov = Math.exp(-1.6 * dn * dn);
+            final double dn = dR / (halfW + 0.35);
+            double cov = Math.exp(-1.6 * dn * dn);
+            if (wow > 0.01) {
+              final double an = dR / (halfW * 2.5 + 1.2);
+              cov += wow * 0.35 * Math.exp(-0.9 * an * an);
+            }
             if (cov <= 0.02) continue;
-            addPix(o, x, y, c, Math.min(1, cov * m * gain));
+            int c = base;
+            if (wow > 0.01 && dSigned > 0) {
+              c = LXColor.lerp(c, LXColor.WHITE,
+                (float) (wow * 0.4 * Math.min(1, dSigned / (halfW + 0.5))));
+            }
+            if (wht > 0.01) {
+              c = LXColor.lerp(c, LXColor.WHITE, wht);
+            }
+            addPix(o, x, y, c, Math.min(1, cov * m * gain * throb));
           }
         }
       }
